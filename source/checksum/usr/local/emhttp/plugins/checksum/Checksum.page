@@ -1,0 +1,187 @@
+Menu="Utilities"
+Title="Checksum Creator"
+Icon="community.applications.png"
+---
+<?
+$plugin = "checksum";
+?>
+<script>
+var URL = "/plugins/<?=$plugin?>/include/exec.php";
+
+$(function(){
+
+setTimeout(myFunction,1000);
+
+
+$.post(URL,{action:'initialize'},function(data) {
+  if (data) {
+    $("#settings").html(data);
+  }
+});
+
+});
+
+function myFunction()
+{
+  $("#debug").html(Math.random());
+  setTimeout(myFunction,1000);  
+}
+
+function enableAdd()
+{
+  var s = $("#settings").html();
+
+  if ( s.indexOf("font color=") > -1 )
+  {
+    $("#addMonitor").prop("disabled",true);
+  } else {
+    $("#addMonitor").prop("disabled",false);
+  }
+}
+
+function enableApply(index)
+{
+  $("#apply"+index).prop("disabled",false);
+  $("#run"+index).prop("disabled",true);
+
+  enableAdd();
+}
+
+function disableApply(index)
+{
+  $("#apply"+index).prop("disabled",true);
+  $("#run"+index).prop("disabled",true);
+
+  enableAdd();  
+}
+
+function shareChanged(index)
+{
+  var selected = $("#share"+index).val();
+
+  if ( selected == "***" )
+  {
+    $("#custom"+index).prop("disabled",false);
+    validatePath(index);
+  } else {
+    $("#custom"+index).prop("disabled",true);
+    enableApply(index);
+  }
+}
+
+function includeChanged(index)
+{
+  var selected = $("#includeall"+index).val();
+
+  if ( selected == "no" )
+  {
+    $("#included"+index).prop("disabled",false);
+    $("#excluded"+index).prop("disabled",false);
+  } else {
+    $("#included"+index).prop("disabled",true);
+    $("#excluded"+index).prop("disabled",true);
+  }
+  enableApply(index);
+}
+
+function validatePath(index)
+{
+  var path = $("#custom"+index).val();
+  var share = $("#share"+index).val();
+  
+  switch (share) {
+    case 'undefined':
+      disableApply(index);
+      break;
+    case '***':
+      $.post(URL,{action:'validate_path',index:index,path:path},function(data) {
+        if (data) {
+          $("#patherror"+index).html(data);
+          if ( data.indexOf("red") == -1 )
+          {
+            enableApply(index);
+          } else {
+            disableApply(index);
+          }
+        }
+      });
+      break;
+  }
+}
+  
+function apply(index)
+{
+  var share = $("#share"+index).val();
+  var custom = $("#custom"+index).val();
+  var algorithm = $("#algorithm"+index).val();
+  var changed = $("#update"+index).val();
+  var separate = $("#separate"+index).val();
+  var extension = $("#extension"+index).val();
+
+  if ( extension != ".hash" ) { extension = algorithm; }
+
+  var includeall = $("#includeall"+index).val();
+  var included = $("#included"+index).val();
+  var excluded = $("#excluded"+index).val();
+
+  var parity = "yes";
+
+  $.post(URL,{action:'apply',index:index,share:share,custom:custom,changed:changed,algorithm:algorithm,separate:separate,extension:extension,includeall:includeall,included:included,excluded:excluded,parity:parity}, function(data) {
+     if (data) {
+       $("#FuckUps").html(data);
+     }
+  });
+  disableApply(index);
+  $("#run"+index).prop("disabled",false);
+}
+  
+function deleteMonitor(index)
+{
+  swal({
+    title: "Are you sure you want to stop monitoring this share?",
+    type: "warning",
+    showCancelButton: true,
+    closeOnCancel: true,
+    closeOnConfirm: false
+  },function(isConfirm)
+  {
+    if ( isConfirm )
+    {
+      $.post(URL,{action:'delete',index:index}, function(data)
+      {
+        if (data)
+        {
+          $("#settings").html(data);
+          swal({
+            title: "Settings Updated",
+            text: "You will need to restart the background process to complete the process",
+            timer: 20000,
+            showConfirmButton: true
+          });
+        }
+      });
+    }
+
+
+  }
+  );
+}
+
+function addMonitor()
+{
+  $.post(URL,{action:'add'},function(data)
+  {
+    if (data)
+    {
+      $("#settings").html(data);
+    }
+  });
+}
+
+
+</script>
+<br><br>
+<span id="settings"></span>
+<center><input type='button' value='Add Monitored Share' id='addMonitor' onclick='addMonitor();'></input></center>
+<span id="FuckUps"></span>
+<span id="debug"></span>
