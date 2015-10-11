@@ -3,7 +3,7 @@
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
 <!ENTITY version   "2015.10.11">
-<!ENTITY md5       "d13c05586d9e65b3944caf0f5248f608">
+<!ENTITY md5       "b28cb2c4c2905b6ff1e75cacc95d3b88">
 <!ENTITY launch    "Utilities:Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
