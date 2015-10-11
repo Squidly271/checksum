@@ -4,7 +4,7 @@ pipe=/tmp/checksumPipe
 
 cat $pipe | while read line
 do
-#  echo "Line returned: $line"
-  /tmp/GitHub/test.php "$line"
+#  echo $line
+  /usr/local/emhttp/plugins/checksum/scripts/checksum.php "$line"
 done
 

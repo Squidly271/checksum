@@ -2,12 +2,15 @@
 
 pipe=/tmp/checksumPipe
 
+cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait
+chmod +x /tmp/checksum/checksum_inotifywait
+
 if [[ ! -p $pipe ]]
 then
   mkfifo $pipe
 fi
 
-echo $@
+echo "Monitoring $@" >> /tmp/checksum/log.txt
 
-/tmp/GitHub/checksum_inotifywait -m -r @*.hash -e close_write --timefmt "%s" --format "***%T***%w" $@ >$pipe
+/tmp/checksum/checksum_inotifywait -m -r --exclude ".*\.\(hash|md5|blake2|sha1|sha256)" -e close_write --timefmt "%s" --format "***%T***%w" $@ >$pipe 2>>/tmp/checksum/log.txt &
 

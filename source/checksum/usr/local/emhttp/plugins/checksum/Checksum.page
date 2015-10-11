@@ -1,17 +1,49 @@
 Menu="Utilities"
 Title="Checksum Creator"
-Icon="community.applications.png"
+Icon="checksum.png"
 ---
 <?
 $plugin = "checksum";
+$checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings.json";
+$checksumPaths['tmpSettings']       = "/tmp/checksum/temp.json";
+$checksumPaths['Settings']          = "/var/local/emhttp/plugins/$plugin/settings.json";
+$checksumPaths['Waiting']           = "/tmp/checksum/waiting";
+$checksumPaths['Parity']            = "/tmp/checksum/parity";
+$checksumPaths['Running']           = "/tmp/checksum/running";
+$checksumPaths['Log']               = "/tmp/checksum/log.txt";
+
+$unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
+
+$scriptPaths['CreateWatch']         = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify.sh";
+$scriptPaths['b2sum']               = "/usr/local/emhttp/plugins/$plugin/include/b2sum";
+$scriptPaths['MonitorWatch']        = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify1.sh";
+$scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
+$scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
+
+
 ?>
 <script>
 var URL = "/plugins/<?=$plugin?>/include/exec.php";
 
 $(function(){
 
-setTimeout(myFunction,1000);
+$.post(URL,{action:'inotifywait'},function(data) {
+  if (data)
+  {
+    swal({
+      title: "inotify tools not installed!",
+      text: "This plugin requires the nerd pack plugin to be installed.\nSee here:\n<a href='https://lime-technology.com/forum/index.php?topic=37541.0' target='_blank'>Nerd Pack Plugin</a>",
+      html: true,
+      type: "error"
+    });
+  }
+});
 
+
+setInterval(function() { statusDisplay(); },500);
+setInterval(function() { showLogLine(); }, 500);
+statusDisplay();
+showLogLine();
 
 $.post(URL,{action:'initialize'},function(data) {
   if (data) {
@@ -21,50 +53,53 @@ $.post(URL,{action:'initialize'},function(data) {
 
 });
 
-function myFunction()
+function showLogLine()
 {
-  $("#debug").html(Math.random());
-  setTimeout(myFunction,1000);  
+  $.post(URL,{action:'logline'},function(data) {
+    if (data) {
+      $("#logged").html(data);
+    }
+  });
 }
 
-function enableAdd()
-{
-  var s = $("#settings").html();
 
-  if ( s.indexOf("font color=") > -1 )
-  {
-    $("#addMonitor").prop("disabled",true);
-  } else {
-    $("#addMonitor").prop("disabled",false);
-  }
+function statusDisplay()
+{
+  $.post(URL,{action:'status'},function(data) {
+    if (data) {
+      $("#status").html(data);
+    }
+  });
 }
+
 
 function enableApply(index)
 {
-  $("#apply"+index).prop("disabled",false);
-  $("#run"+index).prop("disabled",true);
-
-  enableAdd();
+  if ( $("#apply"+index).prop("disabled") )
+  {
+    $("#apply"+index).prop("disabled",false);
+    $("#run"+index).prop("disabled",true);
+  }
 }
 
 function disableApply(index)
 {
   $("#apply"+index).prop("disabled",true);
   $("#run"+index).prop("disabled",true);
-
-  enableAdd();  
 }
 
 function shareChanged(index)
 {
   var selected = $("#share"+index).val();
-
+  $("#restartNeeded").html("<font color='red'>Restart of monitor required for changes to take effect </font>");
+  disableApply(index);
   if ( selected == "***" )
   {
     $("#custom"+index).prop("disabled",false);
     validatePath(index);
   } else {
     $("#custom"+index).prop("disabled",true);
+    $("#patherror"+index).html(" ");
     enableApply(index);
   }
 }
@@ -82,6 +117,7 @@ function includeChanged(index)
     $("#excluded"+index).prop("disabled",true);
   }
   enableApply(index);
+  validateInclude(index);
 }
 
 function validatePath(index)
@@ -91,7 +127,8 @@ function validatePath(index)
   
   switch (share) {
     case 'undefined':
-      disableApply(index);
+      $("#apply"+index).prop("disabled",false);
+      $("#run"+index).prop("disabled",trued);
       break;
     case '***':
       $.post(URL,{action:'validate_path',index:index,path:path},function(data) {
@@ -99,9 +136,11 @@ function validatePath(index)
           $("#patherror"+index).html(data);
           if ( data.indexOf("red") == -1 )
           {
-            enableApply(index);
+            $("#apply"+index).prop("disabled",false);
+            $("#run"+index).prop("disabled",true);
           } else {
-            disableApply(index);
+            $("#apply"+index).prop("disabled",true);
+            $("#run"+index).prop("disabled",false);
           }
         }
       });
@@ -116,6 +155,7 @@ function apply(index)
   var algorithm = $("#algorithm"+index).val();
   var changed = $("#update"+index).val();
   var separate = $("#separate"+index).val();
+  var monitor = $("#monitor"+index).val();
   var extension = $("#extension"+index).val();
 
   if ( extension != ".hash" ) { extension = algorithm; }
@@ -124,9 +164,10 @@ function apply(index)
   var included = $("#included"+index).val();
   var excluded = $("#excluded"+index).val();
 
-  var parity = "yes";
+  var parity = $("#parity").val();
+  var pause = $("#pause").val();
 
-  $.post(URL,{action:'apply',index:index,share:share,custom:custom,changed:changed,algorithm:algorithm,separate:separate,extension:extension,includeall:includeall,included:included,excluded:excluded,parity:parity}, function(data) {
+  $.post(URL,{action:'apply',index:index,share:share,custom:custom,changed:changed,algorithm:algorithm,separate:separate,extension:extension,includeall:includeall,included:included,excluded:excluded,parity:parity,pause:pause,monitor:monitor}, function(data) {
      if (data) {
        $("#FuckUps").html(data);
      }
@@ -174,14 +215,121 @@ function addMonitor()
     if (data)
     {
       $("#settings").html(data);
+      $("#restartNeeded").html("<font color='red'>Restart of monitor required for changes to take effect </font>");
     }
   });
 }
 
+function changeMonitor(index)
+{
+  $("#apply"+index).prop("disabled",false);
+  $("#restartNeeded").html("<font color='red'>Restart of monitor required for changes to take effect </font>");
+}
+
+function restartMonitor()
+{
+  swal({
+    imageUrl: "/plugins/checksum/images/spinner2.gif",
+    imageSize: "20x20",
+    title: "Restarting Background Process",
+    text: "This will take about 15 seconds",
+    showConfirmButton: false
+  });
+
+  $.post(URL,{action:'start_monitor'},function(data)
+  {
+    if (data)
+    {
+      $("#restart").prop("disabled",false);
+      swal.close();
+      $("#restartNeeded").html(" ");
+    }
+  });
+}
+
+function runNow(index)
+{
+  var share = $("#share"+index).val();  
+  var custom = $("#custom"+index).val();
+
+  $.post(URL,{action:'run_now',share:share,custom:custom},function(data)
+  {
+    if (data)
+    {
+      $("#debug").html(data);
+    }
+  });
+}
+
+function changeGlobal()
+{
+  $("#globalApply").prop("disabled",false);
+}
+
+function globalApply()
+{
+  var parity = $("#parity").val();
+  var pause = $("#pause").val();
+
+  $.post(URL,{action:'change_global',parity:parity,pause:pause});
+  $("#globalApply").prop("disabled",true);
+}
+
+function validateInclude(index)
+{
+  if ( ! $("#included"+index).prop("disabled") )
+  {
+    var allCharacters = $("#included"+index).val();
+    allCharacters = allCharacters.concat($("#excluded"+index).val());
+    allCharacters = allCharacters.trim();
+    var length = allCharacters.length;
+
+    if ( length == 0 )
+    {
+      $("#includeerror"+index).html("<font color='red'>You must include at least 1 term</font>");
+      $("#apply"+index).prop("disabled",true);
+    } else {
+      $("#includeerror"+index).html(" ");
+      $("#apply"+index).prop("disabled",false);
+    }
+  } else {
+  $("#includeerror"+index).html(" ");
+  }
+}
 
 </script>
-<br><br>
+<input type='button' id='restart' value='Restart Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font><br>
+<font size='0' face='Courier New'><span id='logged'></span></font><br>
+<center><font size='3'><b>Global Settings</b></font></center><br>
+<center>Pause During Parity Check / Rebuild: 
+<select id='parity' onchange='changeGlobal();'>
+  <option value='yes'>Yes</option>
+  <option value='no'>No</option>
+</select>
+<b>Pause Before Calculating: </b>
+<select id='pause' onchange='changeGlobal();'>
+<option value='60'>1 Minute</option>
+<option value='300'>5 Minutes</option>
+<option value='600'>10 Minutes</option>
+<option value='1800'>30 Minutes</option>
+<option value='3600'>1 Hour</option>
+</select>
+<input type='button' id='globalApply' onclick='globalApply();' value='Apply' disabled></input></center>
+> <b> Pause during Parity Check / Rebuild </b>  This option will pause the creation of any checksum files during a parity check / rebuild AFTER the file in progress (if any) is completed<br>
+> <b> Pause before Calculating </b>  This option will wait the specified amount of time after a change has occurred to a monitored folder before begin its calculations.  Useful to let the system calm down before beginning the calculations
+<hr><br><center><font size='3'><b>Share Settings</b></font></center><hr><br><br>
 <span id="settings"></span>
+
+> <b>Share To Monitor</b> Set to either a user share, or to Custom and enter the full path to the folder.  Note that <b>appdata</b> (if present) will not appear in the drop down list. <b>Note that changes to this entry (after hitting APPLY will also require you to restart background monitor program.</b><br>
+> <b>Algorithm to use</b> For full compatibility with corz checksum, use either <b>md5, sha1, blake2</b><br>
+> <b>Single Checksum file Per Folder</b> Setting to yes will create a single checksumfile for the entire folder (named the <em>folder name.hash</em>  Set to no will create a separate checksum file for each file<br>
+> <b>Include All Files</b> Yes will scan every file.  No will only create checksum's for the files matching the Included / Excluded file lists<br>
+> <b>Included / Excluded Files</b>Space separated file masks.  EG: <b>*.mkv *.avi *.mpv</b><br>
+> <b>Update Changed Files</b>If set to no, if the system detects a change to a file already having a calculated checksum, it will not update the checksum file<br>
+> <b>Extension for Checksum File</b> If set to <em>checksum algorithm</em> will use either .md5, .sha1, .sha256, or .blake2 as a file extension for the checksum files<br>
+> <b>Monitor Folder</b>Yes will allow the system to automatically calculate checksums for new / changed files as they happen <b>Changes require a restart of the background process</b><br>
+> <b>Add To Queue</b>This will initiate (add to the current job queue) a complete scan for new / changed files to the specified folder<br>
+
 <center><input type='button' value='Add Monitored Share' id='addMonitor' onclick='addMonitor();'></input></center>
 <span id="FuckUps"></span>
 <span id="debug"></span>
