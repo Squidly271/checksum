@@ -390,7 +390,13 @@ case 'delete':
   break;
 
 case 'add':
-  $allSettings = json_decode(file_get_contents($checksumPaths['usbSettings']),true);
+  if ( file_exists($checksumPaths['usbSettings']) )
+  {
+    $allSettings = json_decode(file_get_contents($checksumPaths['usbSettings']),true);
+  } else {
+    $allSettings = array();
+  }
+
   $maxIndex = 0;
   foreach ($allSettings as $settings)
   {

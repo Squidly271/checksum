@@ -96,6 +96,7 @@ function logger($string, $newLine = true)
   if ( @filesize($checksumPaths['Log']) > 500000 )
   {
     unlink($checksumPaths['Log']);
+    $string = "Log size > 500,000 bytes.  Restarting\n".$string;
   }
   file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
 }
@@ -172,8 +173,8 @@ function generateMD5($files_to_create)
 
     $md5Filename = $md5FileToCreate['filename'];
 
-    $md5FileText = "#Squid's Checksum\r\n";
-    $md5FileText .= "#\r\n";
+    $md5FileText = "#Squid's Checksum\n";
+    $md5FileText .= "#\n";
 
     $updateFlag = false;
 
@@ -221,7 +222,7 @@ function generateMD5($files_to_create)
 
         $tempFilename = basename($file['file']);
 #        $tempFilename = str_replace("#","/",$tempFilename);
-        $md5FileText .= $tempFilename."#".timeToCorz(filemtime($file['file']))."\r\n";
+        $md5FileText .= $tempFilename."#".timeToCorz(filemtime($file['file']))."\n";
 
         $fileSize = filesize($file['file']);
 
@@ -259,7 +260,7 @@ function generateMD5($files_to_create)
         logger(" )\n",false);
 
 
-        $md5FileText .= $hash."  *".basename($file['file'])."\r\n";
+        $md5FileText .= $hash."  ".basename($file['file'])."\n";
       } else {
         if ( $file['time'] )
         {
@@ -282,8 +283,8 @@ function generateMD5($files_to_create)
             $md5FileText .= "#blake2#";
             break;
         }
-        $md5FileText .= basename($file['file'])."#".timeToCorz($fileTime)."\r\n";
-        $md5FileText .= $file[$md5Settings['Algorithm']]."  *".basename($file['file'])."\r\n";
+        $md5FileText .= basename($file['file'])."#".timeToCorz($fileTime)."\n";
+        $md5FileText .= $file[$md5Settings['Algorithm']]."  ".basename($file['file'])."\n";
       }
     }
     if ( $updateFlag )

@@ -30,6 +30,7 @@ $(function(){
 $.post(URL,{action:'inotifywait'},function(data) {
   if (data)
   {
+    $("#restart").prop("disabled",true);
     swal({
       title: "inotify tools not installed!",
       text: "This plugin requires the nerd pack plugin to be installed.\nSee here:\n<a href='https://lime-technology.com/forum/index.php?topic=37541.0' target='_blank'>Nerd Pack Plugin</a>",
@@ -241,8 +242,15 @@ function restartMonitor()
     if (data)
     {
       $("#restart").prop("disabled",false);
-      swal.close();
       $("#restartNeeded").html(" ");
+  swal({
+    title: "",
+    text: "You need to wait until the log shows <em><b>Watches Established</b></em> prior to queueing any jobs.<br><br>Depending upon your file structure, that may take a minute or so",
+    html: true,
+    type: "warning",
+    showConfirmButton: true
+  });
+
     }
   });
 }
