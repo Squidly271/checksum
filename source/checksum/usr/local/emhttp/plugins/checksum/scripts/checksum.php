@@ -84,6 +84,8 @@ if ( ! $recursiveFlag )
     @time_sleep_until($commandTime + $pauseTime );
     unlink($checksumPaths['Waiting']);
     logger("Resuming\n");
+  } else {
+    logger("Scan command received for $commandPath\n");
   }
 } else {
   logger("Manual scan of $commandPath started\n");
@@ -723,11 +725,7 @@ foreach ($AllSettings as $Settings)
     #logger("Average Speed: $totalDisplayed/s\n");
   }
 }
-if ( $recursiveFlag )
-{
-  logger("Manual scan finished\n");
-}
-
+logger("Job Finished");
 
 unlink($checksumPaths['Running']);
 unlink($checksumPaths['Scanning']);
