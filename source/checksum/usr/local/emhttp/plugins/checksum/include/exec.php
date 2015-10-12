@@ -307,14 +307,14 @@ case 'initialize':
   break;
 
 case 'stop_monitor':
-  file_put_contents("/tmp/checksum/log.txt", "\n\nBackground monitor stopped\n\n", FILE_APPEND);
+  logger("Background Monitor Stopping\n");
   system("/usr/local/emhttp/plugins/checksum/event/stopping_svcs");
   sleep(10);
   echo "hopefully stopped";
   break;
 
 case 'start_monitor':
-  file_put_contents("/tmp/checksum/log.txt", "\n\nBackground monitor restarted\n\n", FILE_APPEND);
+  logger("Background Monitor Starting\n");
   system("/usr/local/emhttp/plugins/checksum/event/disks_mounted > /dev/null 2>&1");
   sleep(10);
   echo "done";
@@ -503,7 +503,7 @@ case 'run_now':
   if ( $share == "/mnt/user/***" ) { $share = $custom; }
 
   $commandLine = 'echo "***'.time().'***'.$share.'***recursive" >> /tmp/checksumPipe';
-  file_put_contents("/tmp/checksum/log.txt", "Manually Added $share to queue\n", FILE_APPEND);
+  logger("Manually Added $share to queue\n");
 
   exec($commandLine);
 
