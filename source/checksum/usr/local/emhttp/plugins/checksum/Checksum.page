@@ -365,7 +365,7 @@ function logButton()
 <span id="settings"></span>
 
 > <b>Share To Monitor</b> Set to either a user share, or to Custom and enter the full path to the folder.  Note that <b>appdata</b> (if present) will not appear in the drop down list. <b>Note that changes to this entry (after hitting APPLY will also require you to restart background monitor program.</b><br>
-> <b>Algorithm to use</b> For full compatibility with corz checksum, use either <b>md5, sha1, blake2</b><br>
+> <b>Algorithm to use</b> For full compatibility with corz checksum, use either <b>md5, sha1, blake2</b>  <b><font color='red'>NOTE</font></b>  If you are using (or planning on using) Corz checksum for windows, SHA256 is NOT supported by that program<br>
 > <b>Single Checksum file Per Folder</b> Setting to yes will create a single checksumfile for the entire folder (named the <em>folder name.hash</em>  Set to no will create a separate checksum file for each file<br>
 > <b>Include All Files</b> Yes will scan every file.  No will only create checksum's for the files matching the Included / Excluded file lists<br>
 > <b>Included / Excluded Files</b>Space separated file masks.  EG: <b>*.mkv *.avi *.mpv</b><br>

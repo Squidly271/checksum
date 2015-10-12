@@ -120,11 +120,17 @@ function createShare($i,$settings = false)
 
   foreach ( array("md5","sha1","sha256","blake2") as $algorithm)
   {
+    $algorithmComment = "";
+    if ( $algorithm == "sha256" )
+    {
+      $algorithmComment = "  (* see help)";
+    }
+
     if ( $settings['Algorithm'] == $algorithm )
     {
-      $t .= "<option value='$algorithm' selected>$algorithm</option>";
+      $t .= "<option value='$algorithm' selected>$algorithm$algorithmComment</option>";
     } else {
-      $t .= "<option value='$algorithm'>$algorithm</option>";
+      $t .= "<option value='$algorithm'>$algorithm$algorithmComment</option>";
     }
   }
   $t .= "</select></td>";

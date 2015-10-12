@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.11c">
-<!ENTITY md5       "d6d8c6e68fe6e9ddcb572a2f6efdd996">
+<!ENTITY version   "2015.10.11d">
+<!ENTITY md5       "7c513411f170be2e5d9ee089c92ad400">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">

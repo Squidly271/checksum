@@ -97,8 +97,9 @@ function logger($string, $newLine = true)
 
   if ( @filesize($checksumPaths['Log']) > 500000 )
   {
+    $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
+    file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
     unlink($checksumPaths['Log']);
-    $string = "Log size > 500,000 bytes.  Restarting\n".$string;
   }
   file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
 }
