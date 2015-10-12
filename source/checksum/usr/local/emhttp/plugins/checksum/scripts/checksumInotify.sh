@@ -2,8 +2,8 @@
 
 pipe=/tmp/checksumPipe
 
-cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait
-chmod +x /tmp/checksum/checksum_inotifywait
+cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
+chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
 
 if [[ ! -p $pipe ]]
 then
