@@ -232,7 +232,7 @@ function restartMonitor()
   swal({
     imageUrl: "/plugins/checksum/images/spinner2.gif",
     imageSize: "20x20",
-    title: "Restarting Background Process",
+    title: "Starting Background Process",
     text: "This will take about 15 seconds",
     showConfirmButton: false
   });
@@ -254,6 +254,33 @@ function restartMonitor()
     }
   });
 }
+
+function stopMonitor()
+{
+  swal({
+    imageUrl: "/plugins/checksum/images/spinner2.gif",
+    imageSize: "20x20",
+    title: "Stopping Background Process",
+    text: "This will take about 15 seconds",
+    showConfirmButton: false
+  });
+
+  $.post(URL,{action:'stop_monitor'},function(data)
+  {
+    if (data)
+    {
+  swal({
+    title: "",
+    text: "Any scans queued up have probably been lost",
+    html: true,
+    type: "warning",
+    showConfirmButton: true
+  });
+
+    }
+  });
+}
+
 
 function runNow(index)
 {
@@ -308,8 +335,14 @@ function validateInclude(index)
   }
 }
 
+function logButton()
+{
+  openWindow('/plugins/checksum/scripts/showlog.sh','Checksum Log',900,1500);
+}
+
+
 </script>
-<input type='button' id='restart' value='Restart Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font><br>
+<input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font><span style='float:right'><input type='button' value='Log' onclick='logButton();'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
 <center><font size='3'><b>Global Settings</b></font></center><br>
 <center>Pause During Parity Check / Rebuild: 

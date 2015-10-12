@@ -1,8 +1,9 @@
 #!/bin/bash
 
-pkill -f checksumInotify1.sh
-pkill -f checksum_inotifywait
-pkill -f checksum.php
+pkill -15 -f checksumInotify1.sh
+pkill -15 -f checksum_inotifywait
+pkill -15 -f checksum.php
+pkill -15 -f checksumInotify.sh
 
 rm /tmp/checksum/running > /dev/null 2>&1
 rm /tmp/checksum/waiting > /dev/null 2>&1

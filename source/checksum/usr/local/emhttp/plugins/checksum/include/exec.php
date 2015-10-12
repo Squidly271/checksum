@@ -273,10 +273,16 @@ case 'initialize':
   echo $output;
   break;
 
+case 'stop_monitor':
+  file_put_contents("/tmp/checksum/log.txt", "\n\nBackground monitor stopped\n\n", FILE_APPEND);
+  system("/usr/local/emhttp/plugins/checksum/event/stopping_svcs");
+  sleep(10);
+  echo "hopefully stopped";
+  break;
+
 case 'start_monitor':
-  exec("pkill checksumInotify*");
-  exec("pkill checksum_inotifywait");
-  system("/usr/local/emhttp/plugins/checksum/scripts/start_monitor.sh > /dev/null 2>&1");
+  file_put_contents("/tmp/checksum/log.txt", "\n\nBackground monitor restarted\n\n", FILE_APPEND);
+  system("/usr/local/emhttp/plugins/checksum/event/started > /dev/null 2>&1");
   sleep(10);
   echo "done";
   break;
@@ -425,14 +431,13 @@ case 'status':
 
   if ( $status )
   {
-    $t .= "<font color='green'>Running</font>";
+    $t .= "<font color='green'>Running</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',false);</script>";
   } else {
-    $t .= "<font color='red'>Not Running</font>";
+    $t .= "<font color='red'>Not Running</font><script>$('#restart').prop('disabled',false);$('#stop').prop('disabled',true);</script>";
   }
 
   $md5Status = "Idle";
 
-  if ( file_exists("/tmp/checksum/scanning") ) { $md5Status = "Scanning"; }
   if ( file_exists("/tmp/checksum/waiting") )  { $md5Status = "Waiting For Timeout"; }
   if ( file_exists("/tmp/checksum/running") )  { $md5Status = "Running"; }
   if ( file_exists("/tmp/checksum/parity") )   { $md5Status = "<font color='red'>Paused for parity check / rebuild</font>"; }
