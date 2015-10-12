@@ -1,6 +1,13 @@
 #!/usr/bin/php
 <?php
 
+#################################################
+##                                             ##
+##  Checksum.  Copyright 2015, Andrew Zawadzki ##
+##                                             ##
+#################################################
+
+
 $plugin="checksum";
 $checksumPaths['usbSettings'] = "/boot/config/plugins/$plugin/settings.json";
 $checksumPaths['tmpSettings'] = "/tmp/checksum/temp.json";

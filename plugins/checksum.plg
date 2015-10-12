@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.12b">
-<!ENTITY md5       "3917d887b387b85f6de2f8835cca971e">
+<!ENTITY version   "2015.10.12">
+<!ENTITY md5       "efae7480bb2f9e8b8914c9877d8ed635">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,8 +13,8 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
-###2015.10.11###
-- First beta release
+###2015.10.12###
+- Initial Release
 </CHANGES>
 
 <!-- The 'pre-install' script. -->
@@ -55,6 +55,8 @@ The 'remove' script.
 <INLINE>
 /usr/local/emhttp/plugins/checksum/event/stopping_svcs
 removepkg &name;-&version;
+rm -rf /tmp/checksum
+rm -rf /var/local/emhttp/plugins/checksum
 rm -rf &plugdir;
 rm -rf /boot/config/plugins/&name;
 </INLINE>

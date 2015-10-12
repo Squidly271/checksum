@@ -3,6 +3,14 @@ Title="Checksum Creator"
 Icon="checksum.png"
 ---
 <?
+
+#################################################
+##                                             ##
+##  Checksum.  Copyright 2015, Andrew Zawadzki ##
+##                                             ##
+#################################################
+
+
 $plugin = "checksum";
 $checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings.json";
 $checksumPaths['tmpSettings']       = "/tmp/checksum/temp.json";
@@ -20,12 +28,29 @@ $scriptPaths['MonitorWatch']        = "/usr/local/emhttp/plugins/$plugin/scripts
 $scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
 $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
 
+$unRaidVariables = parse_ini_file("/var/local/emhttp/var.ini");
+$unRaidStarted = $unRaidVariables['mdState'] == "STARTED" ? "true" : "false";
+
 
 ?>
 <script>
 var URL = "/plugins/<?=$plugin?>/include/exec.php";
 
 $(function(){
+
+if ( <?=$unRaidStarted?> == false )
+{
+    swal({
+      title: "unRaid array not started",
+      text: "The array must be started to make changes to this plugin",
+      html: true,
+      showConfirmButton: false,
+      type: "error"
+    });
+    return;
+
+}
+
 
 $.post(URL,{action:'inotifywait'},function(data) {
   if (data)
