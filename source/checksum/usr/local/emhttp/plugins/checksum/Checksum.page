@@ -41,8 +41,8 @@ $.post(URL,{action:'inotifywait'},function(data) {
 });
 
 
-setInterval(function() { statusDisplay(); },500);
-setInterval(function() { showLogLine(); }, 500);
+setInterval(function() { statusDisplay(); },1500);
+setInterval(function() { showLogLine(); }, 5000);
 statusDisplay();
 showLogLine();
 
@@ -260,11 +260,14 @@ function runNow(index)
   var share = $("#share"+index).val();  
   var custom = $("#custom"+index).val();
 
+  $("#run"+index).prop("disabled",true);
+
   $.post(URL,{action:'run_now',share:share,custom:custom},function(data)
   {
     if (data)
     {
       $("#debug").html(data);
+      $("#run"+index).prop("disabled",false);
     }
   });
 }

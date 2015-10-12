@@ -456,8 +456,16 @@ case 'run_now':
   if ( $share == "/mnt/user/***" ) { $share = $custom; }
 
   $commandLine = 'echo "***'.time().'***'.$share.'***recursive" >> /tmp/checksumPipe';
-  echo $commandLine;
+  file_put_contents("/tmp/checksum/log.txt", "Manually Added $share to queue\n", FILE_APPEND);
+
   exec($commandLine);
+
+  sleep(2);
+
+  exec($commandLine);
+
+  echo "done";
+
   break;
 
 case 'change_global':

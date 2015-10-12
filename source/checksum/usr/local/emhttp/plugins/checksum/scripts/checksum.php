@@ -23,6 +23,8 @@ $scriptPaths['inotifywait']   = "/usr/bin/inotifywait";
 
 # get the settings
 
+proc_nice(10);
+
 file_put_contents($checksumPaths['Scanning'],"scanning");
 
 $totalBytes = 0;
@@ -372,7 +374,7 @@ function parseMD5($filename)
    }
    $md5Entry = $filePath."/".$md5File;
 
-   $md5Array[$md5Entry]['time'] = timeToCorz(filemtime($md5Entry));
+   $md5Array[$md5Entry]['time'] = filemtime($md5Entry);
    $md5Array[$md5Entry]['md5'] = $md5Calculated;
 
   }
