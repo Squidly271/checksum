@@ -18,6 +18,11 @@ $scriptPaths['MonitorWatch']  = "/usr/local/emhttp/plugins/$plugin/scripts/check
 $scriptPaths['inotifywait']   = "/usr/bin/inotifywait";
 $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
 
+if ( ! is_dir("/var/local/emhttp/plugins/checksum") )
+{
+  mkdir("/var/local/emhttp/plugins/checksum");
+}
+
 
 if ( ! file_exists($scriptPaths['inotifywait']) )
 {
