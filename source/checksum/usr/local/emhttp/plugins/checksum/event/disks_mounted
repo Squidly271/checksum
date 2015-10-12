@@ -1,4 +1,7 @@
 #!/bin/bash
 
+mkdir /tmp/checksum
+
+
 echo "/usr/local/emhttp/plugins/checksum/scripts/start_monitor.sh > /dev/null 2>&1" | at -M NOW 
 

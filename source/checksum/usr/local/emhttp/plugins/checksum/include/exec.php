@@ -288,7 +288,7 @@ case 'stop_monitor':
 
 case 'start_monitor':
   file_put_contents("/tmp/checksum/log.txt", "\n\nBackground monitor restarted\n\n", FILE_APPEND);
-  system("/usr/local/emhttp/plugins/checksum/event/started > /dev/null 2>&1");
+  system("/usr/local/emhttp/plugins/checksum/event/disks_mounted > /dev/null 2>&1");
   sleep(10);
   echo "done";
   break;
