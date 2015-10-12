@@ -459,14 +459,19 @@ case 'add':
 
 case 'status':
   $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
+  $inotifyInstalled = is_file("/usr/bin/inotifywait");
 
   $t = "";
-
-  if ( $status )
+  if ( $inotifyInstalled)
   {
-    $t .= "<font color='green'>Running</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',false);</script>";
+    if ( $status )
+    {
+      $t .= "<font color='green'>Running</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',false);</script>";
+    } else {
+      $t .= "<font color='red'>Not Running</font><script>$('#restart').prop('disabled',false);$('#stop').prop('disabled',true);</script>";
+    }
   } else {
-    $t .= "<font color='red'>Not Running</font><script>$('#restart').prop('disabled',false);$('#stop').prop('disabled',true);</script>";
+    $t .= "<font color='red'>inotifywait NOT installed</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',true);</script>";
   }
 
   $md5Status = "Idle";
