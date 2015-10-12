@@ -694,7 +694,6 @@ foreach ($AllSettings as $Settings)
 
 #$time = secondsToTime($totalTime);
 
- #   logger("\n");
 #    logger("Total Time Elapsed: ");
 
     $readableTime = readableTime($totalTime);
@@ -725,7 +724,7 @@ foreach ($AllSettings as $Settings)
     #logger("Average Speed: $totalDisplayed/s\n");
   }
 }
-logger("Job Finished");
+logger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed\n");
 
 unlink($checksumPaths['Running']);
 unlink($checksumPaths['Scanning']);
