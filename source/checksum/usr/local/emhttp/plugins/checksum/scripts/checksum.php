@@ -83,7 +83,6 @@ if ( ! $recursiveFlag )
     file_put_contents($checksumPaths['Waiting'],"waiting");
     @time_sleep_until($commandTime + $pauseTime );
     unlink($checksumPaths['Waiting']);
-    logger("Resuming\n");
   } else {
     logger("Scan command received for $commandPath\n");
   }
@@ -685,29 +684,13 @@ foreach ($AllSettings as $Settings)
   if ( strpos($commandPath,$Settings['Path']) === 0 )
   {
     $md5Settings = $Settings;
-#    print_r($Settings);
     $foundFlag = true;
 
     $startTime = time();
     getFiles($commandPath,$recursiveFlag);
     $totalTime = time() - $startTime;
 
-#$time = secondsToTime($totalTime);
-
-#    logger("Total Time Elapsed: ");
-
     $readableTime = readableTime($totalTime);
-
-#    echo $readableTime;
-
-    if ( $timePaused ) {
- #     logger("  Not including parity check time of ".readableTime($timePaused));
-    }
-  #  logger("\n");
-
-
-   # logger("Total Calculated: ".human_filesize($totalBytes)."\n");
-
 
     if ( $totalBytes )
     {
@@ -719,12 +702,9 @@ foreach ($AllSettings as $Settings)
     } else {
       $totalDisplayed = "0.00 B";
     }
-
-
-    #logger("Average Speed: $totalDisplayed/s\n");
   }
 }
-logger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed\n");
+logger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed/s\n");
 
 unlink($checksumPaths['Running']);
 unlink($checksumPaths['Scanning']);
