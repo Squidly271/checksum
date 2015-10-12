@@ -83,6 +83,7 @@ if ( ! $recursiveFlag )
     file_put_contents($checksumPaths['Waiting'],"waiting");
     @time_sleep_until($commandTime + $pauseTime );
     unlink($checksumPaths['Waiting']);
+    logger("Resuming\n");
   }
 } else {
   logger("Manual scan of $commandPath started\n");
