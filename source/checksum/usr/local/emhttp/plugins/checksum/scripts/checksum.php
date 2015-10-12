@@ -468,7 +468,7 @@ function getFiles($path, $recursive = false)
         unset($md5Array);
       }
       if ( is_array($md5Array[$filename]) ) {
-        if ( filemtime($filename) != $md5Array[$filename]['time'] )
+        if ( filemtime($filename) > $md5Array[$filename]['time'] )
         {
           $files_temp['changed'] = true;
           $files_temp['update'] = false;
