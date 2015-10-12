@@ -76,6 +76,10 @@ if ( ! $recursiveFlag )
 {
   if ( time() < ( $commandTime + $pauseTime ) )
   {
+    logger("Scan command received for $commandPath\n");
+    $timeToWait = $commandTime + $pauseTime - time();
+    logger("Waiting $timeToWait seconds before processing.\n");
+
     file_put_contents($checksumPaths['Waiting'],"waiting");
     @time_sleep_until($commandTime + $pauseTime );
     unlink($checksumPaths['Waiting']);

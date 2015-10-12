@@ -41,6 +41,23 @@ if ( ! is_dir(pathinfo($checksumPaths['usbSettings'],PATHINFO_DIRNAME)) )
   exec("mkdir -p ".pathinfo($checksumPaths['usbSettings'],PATHINFO_DIRNAME));
 }
 
+function logger($string, $newLine = true)
+{
+  global  $checksumPaths;
+  if ( $newLine )
+  {
+    $string = date("M j Y h:i:s  ").$string;
+  }
+
+  if ( @filesize($checksumPaths['Log']) > 500000 )
+  {
+    $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
+    file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
+    unlink($checksumPaths['Log']);
+  }
+  file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
+}
+
 
 function createShare($i,$settings = false)
 {
@@ -473,6 +490,15 @@ case 'run_now':
 
   $share = "/mnt/user/".urldecode(($_POST['share']));
   $custom = urldecode(($_POST['custom']));
+
+  $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
+
+  if ( ! $status )
+  {
+    logger("Can't queue a job if monitor isn't running\n");
+    echo "done";
+    break;
+  }
 
   if ( $share == "/mnt/user/***" ) { $share = $custom; }
 
