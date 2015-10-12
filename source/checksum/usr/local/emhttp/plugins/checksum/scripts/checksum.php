@@ -42,12 +42,19 @@ if ( ! file_exists($checksumPaths['Settings']) )
 {
   copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
 }
-if ( ! file_exists($checksumPaths['Global']) )
+
+if ( file_exists($checksumPaths['usbGlobal']) )
 {
-  copy($checksumPaths['usbGlobal'],$checksumPaths['Global']);
+  if ( ! file_exists($checksumPaths['Global']) )
+  {
+    copy($checksumPaths['usbGlobal'],$checksumPaths['Global']);
+  }
+  $globalSettings = json_decode(file_get_contents($checksumPaths['Global']),true);
+} else {
+  $globalSettings['Parity'] = true;
+  $globalSettings['Pause'] = 3600;
 }
 
-$globalSettings = json_decode(file_get_contents($checksumPaths['Global']),true);
 $pauseTime = intval($globalSettings['Pause']);
 
 $commandArguments = explode("***",$argv[1]);

@@ -271,17 +271,20 @@ case 'initialize':
   {
     copy($checksumPaths['usbGlobal'],$checksumPaths['Global']);
     $globalSettings = json_decode(file_get_contents($checksumPaths['Global']),true);
-
-    $output .= "<script>$('#pause').val('".$globalSettings['Pause']."');";
-
-    if ( $globalSettings['Parity'] )
-    {
-      $output .= "$('#parity').val('yes');";
-    } else {
-      $output .= "$('#parity').val('no');";
-    }
-    $output .= "</script>";
+  } else {
+    $globalSettings['Parity'] = true;
+    $globalSettings['Pause'] = 3600;
   }
+
+  $output .= "<script>$('#pause').val('".$globalSettings['Pause']."');";
+
+  if ( $globalSettings['Parity'] )
+  {
+    $output .= "$('#parity').val('yes');";
+  } else {
+    $output .= "$('#parity').val('no');";
+  }
+  $output .= "</script>";
 
   echo $output;
   break;
