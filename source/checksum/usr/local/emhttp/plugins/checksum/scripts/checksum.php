@@ -14,6 +14,7 @@ $checksumPaths['tmpSettings'] = "/tmp/checksum/temp.json";
 $checksumPaths['Settings']    = "/var/local/emhttp/plugins/$plugin/settings.json";
 $checksumPaths['Waiting']     = "/tmp/checksum/waiting";
 $checksumPaths['Parity']      = "/tmp/checksum/parity";
+$checksumPaths['Mover']       = "/tmp/checksum/mover";
 $checksumPaths['Running']     = "/tmp/checksum/running";
 $checksumPaths['Scanning']    = "/tmp/checksum/scanning";
 $checksumPaths['Global']      = "/var/local/emhttp/plugins/$plugin/global.json";
@@ -91,6 +92,20 @@ if ( ! $recursiveFlag )
 }
 
 #print_r($AllSettings);
+
+
+function is_mover_running()
+{
+  global $globalSettings;
+
+  if ( ! $globalSettings['Mover'] )
+  {
+    return false;
+  }
+  $status = exec('ps -A -f | grep -v grep | grep "/usr/local/sbin/mover"');
+
+  return $status;
+}
 
 function is_parity_running()
 {
@@ -175,25 +190,6 @@ function generateMD5($files_to_create)
 
   foreach ($files_to_create as $md5FileToCreate)
   {
-    if ( is_parity_running() ) {
-      logger("Parity check / rebuild currently running.  Pausing until completed\n");
-      $timeInPause = time();
-
-      file_put_contents($checksumPaths['Parity'],"running");
-
-      while (1) {
-        if ( is_parity_running() ) {
-          sleep(600);
-        } else {
-          logger("Parity check / rebuild finished... Resuming...\n");
-          unlink($checksumPaths['Parity']);
-          break;
-        }
-      }
-      $timeInPause = time() - $timeInPause;
-      $timePaused = $timePause + $timeInPause;
-    }
-
     $md5Filename = $md5FileToCreate['filename'];
 
     $md5FileText = "#Squid's Checksum\n";
@@ -210,7 +206,31 @@ function generateMD5($files_to_create)
     }
 
     foreach ($md5FileToCreate['files'] as $file) {
+      if ( is_parity_running() ) {
+        logger("Parity check / rebuild currently running.  Pausing until completed\n");
+        $timeInPause = time();
 
+        file_put_contents($checksumPaths['Parity'],"running");
+
+        while (1) {
+          if ( is_parity_running() ) {
+            sleep(600);
+          } else {
+            logger("Parity check / rebuild finished... Resuming...\n");
+            unlink($checksumPaths['Parity']);
+            break;
+          }
+        }
+        $timeInPause = time() - $timeInPause;
+        $timePaused = $timePause + $timeInPause;
+      }
+
+      $paranoiaCheck = trim($md5Settings['Extension']);
+      if ( !$paranoiaCheck )
+      {
+        logger("\n\nFatal error - Extension is blank\n\n");
+        exit();
+      }
 # check to see if file wound up getting deleted.
       if ( ! file_exists($file['file']) ) {
         continue;

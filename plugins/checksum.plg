@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.12">
-<!ENTITY md5       "d71bc7b064d197127abd76592a166a15">
+<!ENTITY version   "2015.10.13">
+<!ENTITY md5       "3274d9a5f5843bb5e0bb4fa9ff7c6853">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,10 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.10.13###
+- Fix issue with shares containing spaces wouldn't monitor
+- Fix issue with parity check pauses only happening at beggining of job not in the middle
+
 ###2015.10.12###
 - Initial Release
 </CHANGES>

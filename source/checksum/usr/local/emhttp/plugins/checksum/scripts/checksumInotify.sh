@@ -12,5 +12,5 @@ fi
 
 echo "Monitoring $@" >> /tmp/checksum/log.txt
 
-/tmp/checksum/checksum_inotifywait -m -r --exclude ".*\.\(hash|md5|blake2|sha1|sha256)" -e close_write --timefmt "%s" --format "***%T***%w" $@ >$pipe 2>>/tmp/checksum/log.txt &
+/tmp/checksum/checksum_inotifywait -m -r  -e close_write --timefmt "%s" --format "***%T***%w" "$@" >$pipe 2>>/tmp/checksum/log.txt &
 

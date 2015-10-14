@@ -14,6 +14,7 @@ $checksumPaths['Settings']          = "/var/local/emhttp/plugins/$plugin/setting
 $checksumPaths['Waiting']           = "/tmp/checksum/waiting";
 $checksumPaths['Parity']            = "/tmp/checksum/parity";
 $checksumPaths['Running']           = "/tmp/checksum/running";
+$checksumPaths['Mover']             = "/tmp/checksum/mover";
 $checksumPaths['Log']               = "/tmp/checksum/log.txt";
 $checksumPaths['Global']            = "/var/local/emhttp/plugins/$plugin/global.json";
 $checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/global.json";
@@ -301,6 +302,14 @@ case 'initialize':
   } else {
     $output .= "$('#parity').val('no');";
   }
+  if ( $globalSettings['Mover'] )
+  {
+    $output .= "$('#mover').val('yes');";
+  } else {
+    $output .= "$('#mover').val('no');";
+  }
+
+
   $output .= "</script>";
 
   echo $output;
@@ -478,6 +487,7 @@ case 'status':
 
   if ( file_exists("/tmp/checksum/waiting") )  { $md5Status = "Waiting For Timeout"; }
   if ( file_exists("/tmp/checksum/running") )  { $md5Status = "Running"; }
+  if ( file_exists("/tmp/checksum/mover") )    { $md5Status = "<font color='red'>Paused during mover operation</font>"; }
   if ( file_exists("/tmp/checksum/parity") )   { $md5Status = "<font color='red'>Paused for parity check / rebuild</font>"; }
 
   $t .= "  Checksum Calculations <font color='green'>$md5Status</font>";
