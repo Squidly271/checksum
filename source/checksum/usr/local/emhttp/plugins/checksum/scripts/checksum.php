@@ -17,8 +17,10 @@ $checksumPaths['Parity']      = "/tmp/checksum/parity";
 $checksumPaths['Mover']       = "/tmp/checksum/mover";
 $checksumPaths['Running']     = "/tmp/checksum/running";
 $checksumPaths['Scanning']    = "/tmp/checksum/scanning";
+$checksumPaths['Paranoia']    = "/tmp/checksum/paranoia";
 $checksumPaths['Global']      = "/var/local/emhttp/plugins/$plugin/global.json";
 $checksumPaths['usbGlobal']   = "/boot/config/plugins/$plugin/global.json";
+$checksumPaths['OpenQueue']   = "/tmp/checksum/openqueue";
 
 $checksumPaths['Log']         = "/tmp/checksum/log.txt";
 
@@ -127,7 +129,7 @@ function logger($string, $newLine = true)
   global  $checksumPaths, $scriptPaths, $unRaidPaths;
   if ( $newLine )
   {
-    $string = date("M j Y h:i:s  ").$string;
+    $string = date("M j Y H:i:s  ").$string;
   }
 
   if ( @filesize($checksumPaths['Log']) > 500000 )
@@ -141,13 +143,13 @@ function logger($string, $newLine = true)
 
 function is_open($fullPath)
 {
-
-  $directory = pathinfo($fullPath, PATHINFO_DIRNAME);
+  $directory = pathinfo($fullPath,PATHINFO_DIRNAME);
   $filename = pathinfo($fullPath, PATHINFO_BASENAME);
 
-  $result = exec('lsof +D "'.$directory.'" | grep -c -i "'.$filename.'"');
+  $command = 'lsof +d "'.$directory.'" | grep "'.$filename.'"';
+  $result = exec($command);
 
-  return ( $result != "0" );
+  return $result;
 }
 
 
@@ -171,6 +173,43 @@ function fileMatch($filename,$matchArray)
   return false;
 }
 
+function paranoiaCheck($filename)
+{
+  global $md5Settings, $globalSettings, $files_to_create, $md5FileToCreate, $checksumPaths;
+
+  $extensionGiven = pathinfo($filename,PATHINFO_EXTENSION);
+
+  switch ( $extensionGiven ) {
+    case "md5":
+      break;
+    case "hash":
+      break;
+    case "sha1":
+      break;
+    case "sha256":
+      break;
+    case "blake2":
+      break;
+    default:
+      logger("Paranoia check failed!!  Execution halted\n");
+      logger("Read / Write of hash file's extension.  Extension != {hash|md5|sha1|sha256|blake2}.  Possible data corruption could follow if contiunued.\n");
+      logger("Relevant variables below.  See support thread for more assistance\n");
+      logger("filename: ".$filename."\n");
+      logger("md5Settings: ".print_r($md5Settings,true)."\n");
+      logger("globalSettings: ".print_r($globalSettings,true)."\n");
+      logger("files_to_create: ".print_r($files_to_create,true)."\n");
+      logger("md5FilesToCreate: ".print_r($md5FileToCreate,true)."\n");
+
+      file_put_contents($checksumPaths['Paranoia'],"check failed");
+
+      exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "Checksum failed paranoia check" -s "Checksum failed paranoia check" -i "alert" -m "See logs for details" -d "See logs for details"');
+      while ( true )
+      {
+        sleep(999999);
+      }
+  }
+  return true;
+}
 
 ##########################################################################
 #                                                                        #
@@ -225,12 +264,6 @@ function generateMD5($files_to_create)
         $timePaused = $timePause + $timeInPause;
       }
 
-      $paranoiaCheck = trim($md5Settings['Extension']);
-      if ( !$paranoiaCheck )
-      {
-        logger("\n\nFatal error - Extension is blank\n\n");
-        exit();
-      }
 # check to see if file wound up getting deleted.
       if ( ! file_exists($file['file']) ) {
         continue;
@@ -251,7 +284,8 @@ function generateMD5($files_to_create)
       if ( $file['update'] )
       {
         if ( is_open($file['file']) ) {
-#          logger($file['file']." is currently open... Skipping\n");
+          logger("Warning: ".$file['file']." is currently open... Skipping.\n");
+          file_put_contents($checksumPaths['OpenQueue'],$file['file']."\n",FILE_APPEND);
           continue;
         }
 
@@ -332,7 +366,10 @@ function generateMD5($files_to_create)
     }
     if ( $updateFlag )
     {
-      file_put_contents($md5Filename,$md5FileText);
+        paranoiaCheck($md5Filename);
+        file_put_contents($md5Filename,$md5FileText);
+        chown($md5Filename,"nobody");
+        chgrp($md5Filename,"users");
     }
   }
 }
@@ -349,6 +386,8 @@ function parseMD5($filename)
   global  $checksumPaths, $scriptPaths, $unRaidPaths;
 
   $filePath = pathinfo($filename,PATHINFO_DIRNAME);
+
+  paranoiaCheck($filename);
 
   $md5 = file_get_contents($filename);
 
@@ -433,7 +472,7 @@ function getFiles($path, $recursive = false)
 {
   global  $checksumPaths, $scriptPaths, $unRaidPaths;
 
-  global $video, $md5Settings;
+  global $video, $md5Settings, $globalSettings;
 
   $files_to_create = array();
   $separate = $md5Settings['Separate'];
@@ -508,7 +547,16 @@ function getFiles($path, $recursive = false)
         unset($md5Array);
       }
       if ( is_array($md5Array[$filename]) ) {
-        if ( filemtime($filename) > $md5Array[$filename]['time'] )
+        if ( abs(filemtime($filename) - $md5Array[$filename]['time']) == 3600 )
+        {
+          if ( $globalSettings['IgnoreHour'] )
+          {
+            logger("Warning: $filename's timestamp differs by exactly 1 hour.  Corz timestamp bug?\n");
+            $md5Array[$filename]['time'] = filemtime($filename);
+          }
+        }
+
+        if ( filemtime($filename) != $md5Array[$filename]['time'] )
         {
           $files_temp['changed'] = true;
           $files_temp['update'] = false;
@@ -536,7 +584,16 @@ function getFiles($path, $recursive = false)
     } else {
 #      print_r($md5Array);
       if ( is_array($md5Array[$filename]) ) {
-        if ( filemtime($filename) > $md5Array[$filename]['time'] )
+        if ( abs(filemtime($filename) - $md5Array[$filename]['time']) == 3600 )
+        {
+          if ( $globalSettings['IgnoreHour'] )
+          {
+            logger("Warning: $filename's timestamp differs by exactly 1 hour.  Corz timestamp bug?\n");
+            $md5Array[$filename]['time'] = filemtime($filename);
+          }
+        }
+
+        if ( filemtime($filename) != $md5Array[$filename]['time'] )
         {
           $temp1['changed'] = true;
           $temp1['update'] = false;

@@ -14,6 +14,7 @@ $checksumPaths['Settings']          = "/var/local/emhttp/plugins/$plugin/setting
 $checksumPaths['Waiting']           = "/tmp/checksum/waiting";
 $checksumPaths['Parity']            = "/tmp/checksum/parity";
 $checksumPaths['Running']           = "/tmp/checksum/running";
+$checksumPaths['Paranoia']          = "/tmp/checksum/paranoia";
 $checksumPaths['Mover']             = "/tmp/checksum/mover";
 $checksumPaths['Log']               = "/tmp/checksum/log.txt";
 $checksumPaths['Global']            = "/var/local/emhttp/plugins/$plugin/global.json";
@@ -47,7 +48,7 @@ function logger($string, $newLine = true)
   global  $checksumPaths;
   if ( $newLine )
   {
-    $string = date("M j Y h:i:s  ").$string;
+    $string = date("M j Y H:i:s  ").$string;
   }
 
   if ( @filesize($checksumPaths['Log']) > 500000 )
@@ -296,6 +297,13 @@ case 'initialize':
 
   $output .= "<script>$('#pause').val('".$globalSettings['Pause']."');";
 
+  if ( $globalSettings['IgnoreHour'] )
+  {
+    $t .= "$('#ignoreHour').val('yes');";
+  } else {
+    $t .= "$('#ignoreHour').val('no');";
+  }
+
   if ( $globalSettings['Parity'] )
   {
     $output .= "$('#parity').val('yes');";
@@ -309,6 +317,19 @@ case 'initialize':
     $output .= "$('#mover').val('no');";
   }
 
+  if ( $globalSettings['NumWatches'] )
+  {
+    $numWatches = intval($globalSettings['NumWatches']);
+  } else {
+    if ( file_exists("/proc/sys/fs/inotify/max_user_watches") )
+    {
+      $numWatches = intval(file_get_contents("/proc/sys/fs/inotify/max_user_watches"));
+    } else {
+      $numWatches = 524288;
+    }
+  }
+
+  $output .= "$('#numwatches').val('$numWatches');";
 
   $output .= "</script>";
 
@@ -489,6 +510,7 @@ case 'status':
   if ( file_exists("/tmp/checksum/running") )  { $md5Status = "Running"; }
   if ( file_exists("/tmp/checksum/mover") )    { $md5Status = "<font color='red'>Paused during mover operation</font>"; }
   if ( file_exists("/tmp/checksum/parity") )   { $md5Status = "<font color='red'>Paused for parity check / rebuild</font>"; }
+  if ( file_exists("/tmp/checksum/paranoia") ) { $md5Status = "<font color='red'><strong>Paranoia Checks Failed.  Review Logs</strong></font>"; }
 
   $t .= "  Checksum Calculations <font color='green'>$md5Status</font>";
 
@@ -520,8 +542,6 @@ case 'run_now':
   $commandLine = 'echo "***'.time().'***'.$share.'***recursive" >> /tmp/checksumPipe';
   logger("Manually Added $share to queue\n");
 
-  exec($commandLine);
-
   sleep(2);
 
   exec($commandLine);
@@ -532,8 +552,14 @@ case 'run_now':
 
 case 'change_global':
   if ( urldecode(($_POST['parity'])) == "yes" ) { $globalSettings['Parity'] = true; } else { $globalSettings['Parity'] = false; }
+  if ( urldecode(($_POST['ignorehour'])) == "yes" ) { $globalSettings['IgnoreHour'] = true; } else { $globalSettings['IgnoreHour'] = false; }
+
+  $globalSettings['NumWatches'] = urldecode(($_POST['numwatches']));
+
   $globalSettings['Pause'] = urldecode(($_POST['pause']));
 
+  file_put_contents("/tmp/checksum/numwatches",$globalSettings['NumWatches']);
+  file_put_contents("/boot/config/plugins/checksum/numwatches",$globalSettings['NumWatches']);
   file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   break;

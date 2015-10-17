@@ -333,8 +333,10 @@ function globalApply()
 {
   var parity = $("#parity").val();
   var pause = $("#pause").val();
+  var ignorehour = $("#ignoreHour").val();
+  var numwatches = $('#numwatches').val();
 
-  $.post(URL,{action:'change_global',parity:parity,pause:pause});
+  $.post(URL,{action:'change_global',parity:parity,pause:pause,ignorehour:ignorehour,numwatches:numwatches});
   $("#globalApply").prop("disabled",true);
 }
 
@@ -365,12 +367,17 @@ function logButton()
   openWindow('/plugins/checksum/scripts/showlog.sh','Checksum Log',900,1500);
 }
 
+function validateWatches()
+{
+  $('#globalApply').prop('disabled',false);
+  $("#restartNeeded").html("<font color='red'>Restart of monitor required for changes to take effect </font>");
+}
 
 </script>
 <input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font><span style='float:right'><input type='button' value='Log' onclick='logButton();'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
 <center><font size='3'><b>Global Settings</b></font></center><br>
-<center>Pause During Parity Check / Rebuild: 
+<center><b>Pause During Parity Check / Rebuild: </b>
 <select id='parity' onchange='changeGlobal();'>
   <option value='yes'>Yes</option>
   <option value='no'>No</option>
@@ -383,6 +390,12 @@ function logButton()
 <option value='1800'>30 Minutes</option>
 <option value='3600'>1 Hour</option>
 </select>
+<b>Ignore Time Stamps Out By Exactly 1 Hour</b>
+<select id='ignoreHour' onchange='changeGlobal();'>
+  <option value='yes'>Yes</option>
+  <option value='no'>No</option>
+</select><br>
+<b>Maximum Number Of inotify Watches:</b> <input type='number' id='numwatches' class='narrow' oninput='validateWatches();'></input><span id='watchesError'></span>
 <input type='button' id='globalApply' onclick='globalApply();' value='Apply' disabled></input></center>
 > <b> Pause during Parity Check / Rebuild </b>  This option will pause the creation of any checksum files during a parity check / rebuild AFTER the file in progress (if any) is completed<br>
 > <b> Pause before Calculating </b>  This option will wait the specified amount of time after a change has occurred to a monitored folder before begin its calculations.  Useful to let the system calm down before beginning the calculations

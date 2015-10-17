@@ -9,3 +9,4 @@ rm /tmp/checksum/running > /dev/null 2>&1
 rm /tmp/checksum/waiting > /dev/null 2>&1
 rm /tmp/checksum/paused > /dev/null 2>&1
 rm /tmp/checksumPipe > /dev/null 2>&1
+rm /tmp/checksum/paranoia > /dev/null 2>&1

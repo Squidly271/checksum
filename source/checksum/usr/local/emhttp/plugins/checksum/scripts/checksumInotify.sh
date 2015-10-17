@@ -2,8 +2,21 @@
 
 pipe=/tmp/checksumPipe
 
-cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
-chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
+if [[ -e /tmp/checksum/numwatches ]]
+then
+  numwatches=`cat /tmp/checksum/numwatches`
+else
+  numwatches=524288
+fi
+
+echo "Setting maximum number of watches to $numwatches" >> /tmp/checksum/log.txt
+echo $numwatches > /proc/sys/fs/inotify/max_user_watches
+
+if [[ ! -e /tmp/checksum/checksum_inotifywait ]]
+then
+  cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
+  chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
+fi
 
 if [[ ! -p $pipe ]]
 then

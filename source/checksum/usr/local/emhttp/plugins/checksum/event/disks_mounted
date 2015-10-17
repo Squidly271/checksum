@@ -1,7 +1,13 @@
 #!/bin/bash
 
 mkdir /tmp/checksum
+cp "/usr/local/emhttp/plugins/checksum/scripts/checksum_is_open.sh" "/etc/cron.hourly/checksum_is_open.sh" >/dev/null 2>&1
 
+if [[ -e "/boot/config/plugins/checksum/numwatches" ]]
+then
+  numWatches=$(cat "/boot/config/plugins/checksum/numwatches")
+  echo $numWatches > "/proc/sys/fs/inotify/max_user_watches"
+fi
 
-echo "/usr/local/emhttp/plugins/checksum/scripts/start_monitor.sh > /dev/null 2>&1" | at -M NOW 
+echo "/usr/local/emhttp/plugins/checksum/scripts/start_monitor.sh > /dev/null 2>&1" | at -M NOW  >/dev/null 2>&1
 
