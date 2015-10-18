@@ -329,6 +329,19 @@ case 'initialize':
     }
   }
 
+  if ( $globalSettings['NumQueue'] )
+  {
+    $numQueue = intval($globalSettings['NumQueue']);
+  } else {
+    if ( file_exists("/proc/sys/fs/inotify/max_queued_events") )
+    {
+      $numQueue = intval(file_get_contents("/proc/sys/fs/inotify/max_queued_events"));
+    } else {
+      $numQueue = 16384;
+    }
+  }
+  $output .= "$('#numqueue').val('$numQueue');";
+
   $output .= "$('#numwatches').val('$numWatches');";
 
   $output .= "</script>";
@@ -375,9 +388,6 @@ case 'validate_path':
 
 case 'apply':
 
-  if ( urldecode(($_POST['parity'])) == "yes" )  { $globalSettings['Parity'] = true; } else { $globalSettings['Parity'] = false; }
-  $globalSettings['Pause'] = urldecode(($_POST['pause']));
-
   $index = urldecode(($_POST['index']));
   $settings['Index'] = $index;
   $settings['Path'] = "/mnt/user/".urldecode(($_POST['share']));
@@ -419,9 +429,6 @@ case 'apply':
     }
   }
   $newSettings[$settings['Path']] = $settings;
-
-  file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
-  file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
 
   file_put_contents($checksumPaths['Settings'],json_encode($newSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
   file_put_contents($checksumPaths['usbSettings'],json_encode($newSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
@@ -555,11 +562,12 @@ case 'change_global':
   if ( urldecode(($_POST['ignorehour'])) == "yes" ) { $globalSettings['IgnoreHour'] = true; } else { $globalSettings['IgnoreHour'] = false; }
 
   $globalSettings['NumWatches'] = urldecode(($_POST['numwatches']));
+  $globalSettings['NumQueue'] = urldecode(($_POST['numqueue']));
 
   $globalSettings['Pause'] = urldecode(($_POST['pause']));
 
-  file_put_contents("/tmp/checksum/numwatches",$globalSettings['NumWatches']);
-  file_put_contents("/boot/config/plugins/checksum/numwatches",$globalSettings['NumWatches']);
+  file_put_contents("/boot/config/plugins/checksum/numqueue",$globalSettings['NumQueue']."\n");
+  file_put_contents("/boot/config/plugins/checksum/numwatches",$globalSettings['NumWatches']."\n");
   file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   break;

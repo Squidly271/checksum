@@ -85,6 +85,7 @@ if ( ! $recursiveFlag )
 
     file_put_contents($checksumPaths['Waiting'],"waiting");
     @time_sleep_until($commandTime + $pauseTime );
+    logger("Resuming\n");
     unlink($checksumPaths['Waiting']);
   } else {
     logger("Scan command received for $commandPath\n");
@@ -497,7 +498,7 @@ function getFiles($path, $recursive = false)
   $test = array_diff(scandir($path), array(".",".."));
 
   $temp = array();
-  
+
   if ( ! $separate ) {
     if ( file_exists($path."/".basename($path).$md5Settings['Extension']) ) {
       $md5Array = parseMD5($path."/".basename($path).$md5Settings['Extension']);
@@ -547,11 +548,20 @@ function getFiles($path, $recursive = false)
         unset($md5Array);
       }
       if ( is_array($md5Array[$filename]) ) {
-        if ( abs(filemtime($filename) - $md5Array[$filename]['time']) == 3600 )
+        $timeDifference = abs(filemtime($filename) - $md5Array[$filename]['time']);
+
+        if ( ($timeDifference == 3600) || ($timeDifference == 3599) || ($timeDifference == 3601) || ($timeDifference == 1) )
         {
           if ( $globalSettings['IgnoreHour'] )
           {
-            logger("Warning: $filename's timestamp differs by exactly 1 hour.  Corz timestamp bug?\n");
+            if ( $timeDifference == 1)
+            {
+              $timeWarning = "Windows <-> Linux timestamp issue?";
+            } else {
+              $timeWarning = "Corz timestamp bug?";
+            }
+
+            logger("Warning: $filename's timestamp differs by exactly ".readableTime($timeDifference).".  $timeWarning ?\n");
             $md5Array[$filename]['time'] = filemtime($filename);
           }
         }
@@ -584,11 +594,20 @@ function getFiles($path, $recursive = false)
     } else {
 #      print_r($md5Array);
       if ( is_array($md5Array[$filename]) ) {
-        if ( abs(filemtime($filename) - $md5Array[$filename]['time']) == 3600 )
+        $timeDifference = abs(filemtime($filename) - $md5Array[$filename]['time']);
+
+        if ( ( $timeDifference == 3600 ) || ($timeDifference == 3599) || ($timeDifference == 3601) || ($timeDifference == 1) )
         {
           if ( $globalSettings['IgnoreHour'] )
           {
-            logger("Warning: $filename's timestamp differs by exactly 1 hour.  Corz timestamp bug?\n");
+            if ( $timeDifference == 1 )
+            {
+              $timeWarning = "Windows <-> Linux timestamp issue";
+            } else {
+              $timeWarning = "Corz timestamp bug";
+            }
+
+            logger("Warning: $filename's timestamp differs by exactly ".readableTime($timeDifference).".  $timeWarning ?\n");
             $md5Array[$filename]['time'] = filemtime($filename);
           }
         }

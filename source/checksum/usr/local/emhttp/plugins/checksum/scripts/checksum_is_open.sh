@@ -11,6 +11,12 @@ then
     filename=$(basename "$fullPath")
     dirname=$(dirname "$fullPath")
 
+    if [[ ! -e "$fullPath" ]]
+    then
+      echo "$fullPath no longer exists.  Deleting from queue" >> /tmp/checksum/log.txt
+      continue
+    fi
+
     lsof +D "$dirname" | grep "$filename" > /tmp/checksum/is_open_tempfile
     filesize=$(stat -c%s "/tmp/checksum/is_open_tempfile")
 

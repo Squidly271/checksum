@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.13">
-<!ENTITY md5       "3274d9a5f5843bb5e0bb4fa9ff7c6853">
+<!ENTITY version   "2015.10.18">
+<!ENTITY md5       "938eccc06241c83510290339c2ed5235">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,12 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.10.18###
+- Fix permissions on hash files
+- Ability to customize inotifywait settings
+- Fix rescheduling of opened files
+- Work arounds for Corz timestamp issues
+
 ###2015.10.13###
 - Fix issue with shares containing spaces wouldn't monitor
 - Fix issue with parity check pauses only happening at beggining of job not in the middle
