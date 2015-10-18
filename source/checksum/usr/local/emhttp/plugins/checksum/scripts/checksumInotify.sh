@@ -2,9 +2,9 @@
 
 pipe=/tmp/checksumPipe
 
-if [[ -e /tmp/checksum/numwatches ]]
+if [[ -e /boot/config/checksum/numwatches ]]
 then
-  numwatches=`cat /tmp/checksum/numwatches`
+  numwatches=`cat /boot/config/checksum/numwatches`
 else
   numwatches=524288
 fi
