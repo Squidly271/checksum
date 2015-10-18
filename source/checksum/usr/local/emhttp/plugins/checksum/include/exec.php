@@ -299,9 +299,9 @@ case 'initialize':
 
   if ( $globalSettings['IgnoreHour'] )
   {
-    $t .= "$('#ignoreHour').val('yes');";
+    $output .= "$('#ignoreHour').val('yes');";
   } else {
-    $t .= "$('#ignoreHour').val('no');";
+    $output .= "$('#ignoreHour').val('no');";
   }
 
   if ( $globalSettings['Parity'] )
