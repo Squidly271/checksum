@@ -69,6 +69,7 @@ rm -rf /tmp/checksum
 rm -rf /var/local/emhttp/plugins/checksum
 rm -rf &plugdir;
 rm -rf /boot/config/plugins/&name;
+rm -rf /etc/cron.hourly/checksum_is_open.sh
 </INLINE>
 </FILE> 
 </PLUGIN>
