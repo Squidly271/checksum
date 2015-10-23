@@ -361,9 +361,33 @@ function validateInclude(index)
   }
 }
 
-function logButton()
+function verifyNow(index)
 {
-  openWindow('/plugins/checksum/scripts/showlog.sh','Checksum Log',900,1500);
+  var share = "/mnt/user/".concat($("#share"+index).val());
+  var percent = $("#percent"+index).val();
+  var lastPercent = $("#last"+index).val();
+
+  if ( share == "/mnt/user/***" )
+  {
+    share = $("#custom"+index).val();
+  }
+
+  $("#verify"+index).prop("disabled",true);
+
+  $.post(URL,{action:'verify_now',share:share,percent:percent,lastPercent:lastPercent}, function(data)
+  {
+    if (data)
+    {
+      $("#verify"+index).prop("disabled",false);
+    }
+  });
+
+}
+
+
+function logButton(whichLog)
+{
+  openWindow('/plugins/checksum/scripts/showlog.sh&arg1='+whichLog,'Checksum Log',900,1500);
 }
 
 function validateWatches()
@@ -373,7 +397,8 @@ function validateWatches()
 }
 
 </script>
-<input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font><span style='float:right'><input type='button' value='Log' onclick='logButton();'></input></span><br>
+<input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font>
+<span style='float:right'><input type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input><input type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input><input type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
 <center><font size='3'><b>Global Settings</b></font></center><br>
 <center><b>Pause During Parity Check / Rebuild: </b>

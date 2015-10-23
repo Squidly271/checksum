@@ -23,6 +23,7 @@ $checksumPaths['usbGlobal']   = "/boot/config/plugins/$plugin/global.json";
 $checksumPaths['OpenQueue']   = "/tmp/checksum/openqueue";
 
 $checksumPaths['Log']         = "/tmp/checksum/log.txt";
+$checksumPaths['ChecksumLog'] = "/tmp/checksum/checksumLog.txt";
 
 $unRaidPaths['Variables']     = "/var/local/emhttp/var.ini";
 
@@ -79,19 +80,19 @@ if ( ! $recursiveFlag )
 {
   if ( time() < ( $commandTime + $pauseTime ) )
   {
-    logger("Scan command received for $commandPath\n");
+    Mainlogger("Scan command received for $commandPath\n");
     $timeToWait = $commandTime + $pauseTime - time();
-    logger("Waiting $timeToWait seconds before processing.\n");
+    Mainlogger("Waiting $timeToWait seconds before processing.\n");
 
     file_put_contents($checksumPaths['Waiting'],"waiting");
     @time_sleep_until($commandTime + $pauseTime );
-    logger("Resuming\n");
+    Mainlogger("Resuming\n");
     unlink($checksumPaths['Waiting']);
   } else {
-    logger("Scan command received for $commandPath\n");
+    Mainlogger("Scan command received for $commandPath\n");
   }
 } else {
-  logger("Manual scan of $commandPath started\n");
+  Mainlogger("Manual scan of $commandPath started\n");
 }
 
 #print_r($AllSettings);
@@ -126,6 +127,23 @@ function is_parity_running()
 }
 
 function logger($string, $newLine = true)
+{
+  global  $checksumPaths, $scriptPaths, $unRaidPaths;
+  if ( $newLine )
+  {
+    $string = date("M j Y H:i:s  ").$string;
+  }
+
+  if ( @filesize($checksumPaths['Log']) > 500000 )
+  {
+    $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
+    file_put_contents($checksumPaths['ChecksumLog'],$string,FILE_APPEND);
+    unlink($checksumPaths['ChecksumLog']);
+  }
+  file_put_contents($checksumPaths['ChecksumLog'],$string,FILE_APPEND);
+}
+
+function Mainlogger($string, $newLine = true)
 {
   global  $checksumPaths, $scriptPaths, $unRaidPaths;
   if ( $newLine )
@@ -192,14 +210,14 @@ function paranoiaCheck($filename)
     case "blake2":
       break;
     default:
-      logger("Paranoia check failed!!  Execution halted\n");
-      logger("Read / Write of hash file's extension.  Extension != {hash|md5|sha1|sha256|blake2}.  Possible data corruption could follow if contiunued.\n");
-      logger("Relevant variables below.  See support thread for more assistance\n");
-      logger("filename: ".$filename."\n");
-      logger("md5Settings: ".print_r($md5Settings,true)."\n");
-      logger("globalSettings: ".print_r($globalSettings,true)."\n");
-      logger("files_to_create: ".print_r($files_to_create,true)."\n");
-      logger("md5FilesToCreate: ".print_r($md5FileToCreate,true)."\n");
+      Mainlogger("Paranoia check failed!!  Execution halted\n");
+      Mainlogger("Read / Write of hash file's extension.  Extension != {hash|md5|sha1|sha256|blake2}.  Possible data corruption could follow if contiunued.\n");
+      Mainlogger("Relevant variables below.  See support thread for more assistance\n");
+      Mainlogger("filename: ".$filename."\n");
+      Mainlogger("md5Settings: ".print_r($md5Settings,true)."\n");
+      Mainlogger("globalSettings: ".print_r($globalSettings,true)."\n");
+      Mainlogger("files_to_create: ".print_r($files_to_create,true)."\n");
+      Mainlogger("md5FilesToCreate: ".print_r($md5FileToCreate,true)."\n");
 
       file_put_contents($checksumPaths['Paranoia'],"check failed");
 
@@ -247,7 +265,7 @@ function generateMD5($files_to_create)
 
     foreach ($md5FileToCreate['files'] as $file) {
       if ( is_parity_running() ) {
-        logger("Parity check / rebuild currently running.  Pausing until completed\n");
+        Mainlogger("Parity check / rebuild currently running.  Pausing until completed\n");
         $timeInPause = time();
 
         file_put_contents($checksumPaths['Parity'],"running");
@@ -256,7 +274,7 @@ function generateMD5($files_to_create)
           if ( is_parity_running() ) {
             sleep(600);
           } else {
-            logger("Parity check / rebuild finished... Resuming...\n");
+            Mainlogger("Parity check / rebuild finished... Resuming...\n");
             unlink($checksumPaths['Parity']);
             break;
           }
@@ -456,8 +474,7 @@ function parseMD5($filename)
    $md5Entry = $filePath."/".$md5File;
 
    $md5Array[$md5Entry]['time'] = filemtime($md5Entry);
-   $md5Array[$md5Entry]['md5'] = $md5Calculated;
-
+   $md5Array[$md5Entry][$md5Settings['Algorithm']] = $md5Calculated;
   }
 #  print_r($md5Array);
   return $md5Array;
@@ -800,7 +817,7 @@ foreach ($AllSettings as $Settings)
     }
   }
 }
-logger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed/s\n");
+Mainlogger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed/s\n");
 
 unlink($checksumPaths['Running']);
 unlink($checksumPaths['Scanning']);

@@ -232,13 +232,21 @@ function createShare($i,$settings = false)
   $t .= "<td><input type='text' id='included$i' $includeFlag class='narrow' oninput='validateInclude($i);' value='$includedFiles'></input></td>";
 
   $t .= "<td><b>Excluded Files:</b></td>";
-  $t .= "<td><input type='text' id='excluded$i' $includeFlag class='narrow' oninput='validateInclude($i);' value='$excludedFiles'></input></td>";
+  $t .= "<td><input type='text' id='excluded$i' $includeFlag class='narrow' oninput='validateInclude($i);' value='$excludedFiles'></input></td><tr>";
+
+  $t .= "<td><b>Manual Verify (% to Check):</b></td>";
+  $t .= "<td><input type='number' id='percent$i' class='narrow' value='100'></input></td>";
+  $t .= "<td><b>Manual Verify (% to start at):</b></td>";
+  $t .= "<td><input type='number' id='last$i' class='narrow' value='0'></input></td>";
 
   $t .= "</tr></table>";
 
   $t .= "</td></tr></table>";
 
-  $t .= "<center><input type='button' id='apply$i' value='Apply' onclick='apply($i);' disabled></input><input type='button' id='run$i' value='Add To Queue' $runSetting onclick='runNow($i);'></input><input type='button' id='delete$i' value='Delete' onclick='deleteMonitor($i);'></input></center>";
+  $t .= "<center><input type='button' id='apply$i' value='Apply' onclick='apply($i);' disabled></input>";
+  $t .= "<input type='button' id='run$i' value='Add To Queue' $runSetting onclick='runNow($i);'></input>";
+  $t .= "<input type='button' id='verify$i'  value='Verify Now' onclick='verifyNow($i);'></input>";
+  $t .= "<input type='button' id='delete$i' value='Delete' onclick='deleteMonitor($i);'></input></center>";
 
   if ( $runSetting == "disabled" )
   {
@@ -269,7 +277,7 @@ switch ($_POST['action']) {
 case 'inotifywait':
   if ( file_exists($scriptPaths['inotifywait']) )
   {
-    exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
+    @exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
   } else {
     echo "not installed";
   }
@@ -496,6 +504,8 @@ case 'add':
 
 case 'status':
   $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
+  $verifyStatus = exec('ps -A -f | grep -v grep | grep "checksum/scripts/verify.php"');
+
   $inotifyInstalled = is_file("/usr/bin/inotifywait");
 
   $t = "";
@@ -520,6 +530,14 @@ case 'status':
   if ( file_exists("/tmp/checksum/paranoia") ) { $md5Status = "<font color='red'><strong>Paranoia Checks Failed.  Review Logs</strong></font>"; }
 
   $t .= "  Checksum Calculations <font color='green'>$md5Status</font>";
+
+  $t .= "  Verifier Status: ";
+  if ( $verifyStatus )
+  {
+    $t .= "<font color='green'><strong>Running</strong></font>";
+  } else {
+    $t .= "<font color='green'><strong>Idle</strong></font>";
+  }
 
   echo $t;
   break;
@@ -571,6 +589,31 @@ case 'change_global':
   file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   break;
+
+case 'verify_now':
+  $share = urldecode(($_POST['share']));
+  $percent = urldecode(($_POST['percent']));
+  $lastPercent = urldecode(($_POST['lastPercent']));
+
+  file_put_contents("/tmp/checksum/verifyShare",$share."\n");
+  file_put_contents("/tmp/checksum/verifyPercent",$percent."\n");
+  file_put_contents("/tmp/checksum/verifyLast",$lastPercent."\n");
+
+  logger("Begin Verification of $share.  Percent To Verify: $percent%  Starting Position: $lastPercent%\n");
+
+  exec("/usr/local/emhttp/plugins/checksum/scripts/start_verify.sh");
+
+  break;
+
+
+
+
+
+
+
+
+
+
 
 }
 ?>
