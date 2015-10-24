@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.18a">
-<!ENTITY md5       "866b1abcda6b607bdedc37dd7824ce6b">
+<!ENTITY version   "2015.10.24">
+<!ENTITY md5       "3eb02de01f4fd76c8a72be1d284ee5ea">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,11 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.10.24###
+- Add in ability to run verifications against shares or disks
+- Revised logging
+- Option to save logs 
+
 ###2015.10.18###
 - Fix permissions on hash files
 - Ability to customize inotifywait settings

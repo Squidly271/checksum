@@ -84,6 +84,10 @@ function logger($string, $newLine = true)
 
     if ( $globalSettings['LogSave'] )
     {
+      if ( ! is_dir("/boot/config/plugins/checksum/logs") )
+      {
+        mkdir("/boot/config/plugins/checksum/logs",0777,true);
+      }
       $saveLogName = "/boot/config/plugins/checksum/logs/Verify-".date("Y-m-d H-i-s").".txt";
       $saveLogText = file_get_contents($checksumPaths['VerifyLog']);
       $saveLogText = str_replace("\n","\r\n",$saveLogText);

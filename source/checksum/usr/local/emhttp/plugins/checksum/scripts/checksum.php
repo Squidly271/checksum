@@ -42,6 +42,12 @@ $totalBytes = 0;
 $timePaused = 0;
 
 
+if ( is_file("/boot/config/plugins/checksum/global.json") )
+{
+  rename("/boot/config/plugins/checksum/global.json",$checksumPaths['usbGlobal']);
+}
+
+
 if ( ! file_exists($checksumPaths['Settings']) )
 {
   copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
@@ -141,6 +147,10 @@ function logger($string, $newLine = true)
 
     if ( $globalSettings['LogSave'] )
     {
+      if ( ! is_dir("/boot/config/plugins/checksum/logs") )
+      {
+        mkdir("/boot/config/plugins/checksum/logs",0777,true);
+      }
       $saveLogName = "/boot/config/plugins/checksum/logs/Checksum-".date("Y-m-d H-i-s").".txt";
       $saveLogText = file_get_contents($checksumPaths['ChecksumLog']);
       $saveLogText = str_replace("\n","\r\n",$saveLogText);
@@ -167,6 +177,10 @@ function Mainlogger($string, $newLine = true)
 
     if ( $globalSettings['LogSave'] )
     {
+      if ( ! is_dir("/boot/config/plugins/checksum/logs") )
+      {
+        mkdir("/boot/config/plugins/checksum/logs",0777,true);
+      }
       $saveLogName = "/boot/config/plugins/checksum/logs/Command-".date("Y-m-d H-i-s").".txt";
       $saveLogText = file_get_contents($checksumPaths['Log']);
       $saveLogText = str_replace("\n","\r\n",$saveLogText);
