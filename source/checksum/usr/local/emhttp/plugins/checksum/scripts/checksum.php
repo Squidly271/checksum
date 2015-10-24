@@ -9,7 +9,7 @@
 
 
 $plugin="checksum";
-$checksumPaths['usbSettings'] = "/boot/config/plugins/$plugin/settings.json";
+$checksumPaths['usbSettings'] = "/boot/config/plugins/$plugin/settings/settings.json";
 $checksumPaths['tmpSettings'] = "/tmp/checksum/temp.json";
 $checksumPaths['Settings']    = "/var/local/emhttp/plugins/$plugin/settings.json";
 $checksumPaths['Waiting']     = "/tmp/checksum/waiting";
@@ -19,7 +19,7 @@ $checksumPaths['Running']     = "/tmp/checksum/running";
 $checksumPaths['Scanning']    = "/tmp/checksum/scanning";
 $checksumPaths['Paranoia']    = "/tmp/checksum/paranoia";
 $checksumPaths['Global']      = "/var/local/emhttp/plugins/$plugin/global.json";
-$checksumPaths['usbGlobal']   = "/boot/config/plugins/$plugin/global.json";
+$checksumPaths['usbGlobal']   = "/boot/config/plugins/$plugin/settings/global.json";
 $checksumPaths['OpenQueue']   = "/tmp/checksum/openqueue";
 
 $checksumPaths['Log']         = "/tmp/checksum/log.txt";
@@ -128,7 +128,7 @@ function is_parity_running()
 
 function logger($string, $newLine = true)
 {
-  global  $checksumPaths, $scriptPaths, $unRaidPaths;
+  global  $checksumPaths, $scriptPaths, $unRaidPaths, $globalSettings;
   if ( $newLine )
   {
     $string = date("M j Y H:i:s  ").$string;
@@ -138,6 +138,15 @@ function logger($string, $newLine = true)
   {
     $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
     file_put_contents($checksumPaths['ChecksumLog'],$string,FILE_APPEND);
+
+    if ( $globalSettings['LogSave'] )
+    {
+      $saveLogName = "/boot/config/plugins/checksum/logs/Checksum-".date("Y-m-d H-i-s").".txt";
+      $saveLogText = file_get_contents($checksumPaths['ChecksumLog']);
+      $saveLogText = str_replace("\n","\r\n",$saveLogText);
+      file_put_contents($saveLogName,$saveLogText);
+    }
+
     unlink($checksumPaths['ChecksumLog']);
   }
   file_put_contents($checksumPaths['ChecksumLog'],$string,FILE_APPEND);
@@ -145,7 +154,7 @@ function logger($string, $newLine = true)
 
 function Mainlogger($string, $newLine = true)
 {
-  global  $checksumPaths, $scriptPaths, $unRaidPaths;
+  global  $checksumPaths, $scriptPaths, $unRaidPaths, $globalSettings;
   if ( $newLine )
   {
     $string = date("M j Y H:i:s  ").$string;
@@ -155,6 +164,14 @@ function Mainlogger($string, $newLine = true)
   {
     $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
     file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
+
+    if ( $globalSettings['LogSave'] )
+    {
+      $saveLogName = "/boot/config/plugins/checksum/logs/Command-".date("Y-m-d H-i-s").".txt";
+      $saveLogText = file_get_contents($checksumPaths['Log']);
+      $saveLogText = str_replace("\n","\r\n",$saveLogText);
+      file_put_contents($saveLogName,$saveLogText);
+    }
     unlink($checksumPaths['Log']);
   }
   file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);

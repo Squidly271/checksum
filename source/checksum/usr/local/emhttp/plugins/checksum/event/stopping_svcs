@@ -4,6 +4,22 @@ pkill -15 -f checksumInotify1.sh
 pkill -15 -f checksum_inotifywait
 pkill -15 -f checksum.php
 pkill -15 -f checksumInotify.sh
+pkill -15 -f verify.php
+
+logTime=$(date +"%Y-%m-%d %H-%M-%S")
+
+logBase="/boot/config/plugins/checksum/logs"
+
+commandLog="$logBase/Command-$logTime.txt"
+verifyLog="$logBase/Verify-$logTime.txt"
+checksumLog="$logBase/Checksum-$logTime.txt"
+
+mkdir -p "/boot/config/plugins/checksum/logs" >/dev/null 2>&1
+
+sed 's/$/\r/' < "/tmp/checksum/log.txt" > "$commandLog"
+sed 's/$/\r/' < "/tmp/checksum/verifylog.txt" > "$verifyLog"
+sed 's/$/\r/' < "/tmp/checksum/checksumLog.txt" > "$checksumLog"
+
 
 rm /tmp/checksum/running > /dev/null 2>&1
 rm /tmp/checksum/waiting > /dev/null 2>&1

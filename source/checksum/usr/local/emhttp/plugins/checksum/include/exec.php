@@ -8,17 +8,20 @@
 
 
 $plugin="checksum";
-$checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings.json";
+$checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings/settings.json";
 $checksumPaths['tmpSettings']       = "/tmp/checksum/temp.json";
 $checksumPaths['Settings']          = "/var/local/emhttp/plugins/$plugin/settings.json";
 $checksumPaths['Waiting']           = "/tmp/checksum/waiting";
 $checksumPaths['Parity']            = "/tmp/checksum/parity";
+$checksumPaths['VerifyParity']      = "/tmp/checksum/verifyparity";
 $checksumPaths['Running']           = "/tmp/checksum/running";
 $checksumPaths['Paranoia']          = "/tmp/checksum/paranoia";
 $checksumPaths['Mover']             = "/tmp/checksum/mover";
 $checksumPaths['Log']               = "/tmp/checksum/log.txt";
+$checksumPaths['FailureLog']        = "/tmp/checksum/failurelog.txt";
 $checksumPaths['Global']            = "/var/local/emhttp/plugins/$plugin/global.json";
-$checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/global.json";
+$checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/settings/global.json";
+
 $unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
 
 $scriptPaths['InitializeWatch']     = "/usr/local/emhttp/plugins/$plugin/scripts.checksumInotify.php";
@@ -43,9 +46,30 @@ if ( ! is_dir(pathinfo($checksumPaths['usbSettings'],PATHINFO_DIRNAME)) )
   exec("mkdir -p ".pathinfo($checksumPaths['usbSettings'],PATHINFO_DIRNAME));
 }
 
+if ( ! is_dir("/boot/config/plugins/checksum/logs") )
+{
+  mkdir("/boot/config/plugins/checksum/logs",0777,true);
+}
+
+if ( ! is_dir("/boot/config/plugins/checksum/settings") )
+{
+  mkdir("/boot/config/plugins/checksum/settings",0777,true);
+}
+
+if ( is_file("/boot/config/plugins/checksum/settings.json") )
+{
+  rename("/boot/config/plugins/checksum/settings.json",$checksumPaths['usbSettings']);
+}
+
+if ( is_file("/boot/config/plugins/checksum/global.json") )
+{
+  rename("/boot/config/plugins/checksum/global.json",$checksumPaths['usbGlobal']);
+}
+
+
 function logger($string, $newLine = true)
 {
-  global  $checksumPaths;
+  global  $checksumPaths, $globalSettings;
   if ( $newLine )
   {
     $string = date("M j Y H:i:s  ").$string;
@@ -55,6 +79,13 @@ function logger($string, $newLine = true)
   {
     $string = "Log size > 500,000 bytes.  Restarting\nIf this is the last line displayed on the log window, you will have to close and reopen the log window".$string;
     file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
+    if ( $globalSettings['LogSave'] )
+    {
+      $saveLogName = "/boot/config/plugins/checksum/logs/Command-".date("Y-m-d H-i-s").".txt";
+      $saveLogText = file_get_contents($checksumPaths['Log']);
+      $saveLogText = str_replace("\n","\r\n",$saveLogText);
+      file_put_contents($saveLogName,$saveLogText);
+    }
     unlink($checksumPaths['Log']);
   }
   file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
@@ -305,6 +336,13 @@ case 'initialize':
 
   $output .= "<script>$('#pause').val('".$globalSettings['Pause']."');";
 
+  if ( $globalSettings['LogSave'] )
+  {
+    $output .= "$('#logsave').val('yes');";
+  } else {
+    $output .= "$('#logsave').val('no');";
+  }
+
   if ( $globalSettings['IgnoreHour'] )
   {
     $output .= "$('#ignoreHour').val('yes');";
@@ -323,6 +361,13 @@ case 'initialize':
     $output .= "$('#mover').val('yes');";
   } else {
     $output .= "$('#mover').val('no');";
+  }
+
+  if ( $globalSettings['Notify'] )
+  {
+    $output .= "$('#notify').val('yes');";
+  } else {
+    $output .= "$('#notify').val('no');";
   }
 
   if ( $globalSettings['NumWatches'] )
@@ -532,11 +577,24 @@ case 'status':
   $t .= "  Checksum Calculations <font color='green'>$md5Status</font>";
 
   $t .= "  Verifier Status: ";
-  if ( $verifyStatus )
+
+  if ( is_file($checksumPaths['VerifyParity']) )
   {
-    $t .= "<font color='green'><strong>Running</strong></font>";
+    $t .= "<font color='red'><strong>Paused for Parity Check / Rebuild</strong></font>";
   } else {
-    $t .= "<font color='green'><strong>Idle</strong></font>";
+    if ( $verifyStatus )
+    {
+      $t .= "<font color='green'><strong>Running</strong></font>";
+    } else {
+      $t .= "<font color='green'><strong>Idle</strong></font>";
+    }
+  }
+
+  if ( is_file($checksumPaths['FailureLog']) )
+  {
+    $t .= "<script>$('#failureLog').prop('disabled',false);</script>";
+  } else {
+    $t .= "<script>$('#failureLog').prop('disabled',true);</script>";
   }
 
   echo $t;
@@ -578,6 +636,8 @@ case 'run_now':
 case 'change_global':
   if ( urldecode(($_POST['parity'])) == "yes" ) { $globalSettings['Parity'] = true; } else { $globalSettings['Parity'] = false; }
   if ( urldecode(($_POST['ignorehour'])) == "yes" ) { $globalSettings['IgnoreHour'] = true; } else { $globalSettings['IgnoreHour'] = false; }
+  if ( urldecode(($_POST['notify'])) == "yes" ) { $globalSettings['Notify'] = true; } else { $globalSettings['Notify'] = false; }
+  if ( urldecode(($_POST['logsave'])) == "yes" ) { $globalSettings['LogSave'] = true; } else { $globalSettings['LogSave'] = false; }
 
   $globalSettings['NumWatches'] = urldecode(($_POST['numwatches']));
   $globalSettings['NumQueue'] = urldecode(($_POST['numqueue']));
@@ -603,9 +663,26 @@ case 'verify_now':
 
   exec("/usr/local/emhttp/plugins/checksum/scripts/start_verify.sh");
 
+  sleep(2);
+
+  echo "done";
+
   break;
 
+case 'initialize_disk':
+  $allDisks = array_diff(scandir("/mnt/"),array(".","..","disks","user","user0","cache"));
 
+  $output = "<select id='disk2check'>";
+
+  foreach ($allDisks as $Disk)
+  {
+    $diskNum = str_replace("disk","",$Disk);
+    $output .= "<option value='$diskNum'>$Disk</option>";
+  }
+  $output .= "</select>";
+
+  echo $output;
+  break;
 
 
 
