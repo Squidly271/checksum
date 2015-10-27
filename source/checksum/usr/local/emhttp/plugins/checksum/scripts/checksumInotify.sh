@@ -24,8 +24,9 @@ echo "Setting maximum number of queued events to $numqueue" >> /tmp/checksum/log
 if [[ ! -e /tmp/checksum/checksum_inotifywait ]]
 then
   cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
-  chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
 fi
+chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
+
 
 if [[ ! -p $pipe ]]
 then
