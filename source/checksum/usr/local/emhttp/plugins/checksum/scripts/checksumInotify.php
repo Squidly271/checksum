@@ -33,7 +33,6 @@ if ( ! file_exists($scriptPaths['inotifywait']) )
 if ( ! file_exists($scriptPaths['checksuminotifywait']) )
 {
   exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
-  file_put_contents("/tmp/checksum/test","whatever");
 }
 
 if ( ! file_exists($checksumPaths['Settings']) )
