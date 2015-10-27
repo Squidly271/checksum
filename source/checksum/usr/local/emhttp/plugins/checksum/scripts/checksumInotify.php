@@ -2,7 +2,7 @@
 <?php
 
 $plugin="checksum";
-$checksumPaths['usbSettings'] = "/boot/config/plugins/$plugin/settings.json";
+$checksumPaths['usbSettings'] = "/boot/config/plugins/$plugin/settings/settings.json";
 $checksumPaths['tmpSettings'] = "/tmp/checksum/temp.json";
 $checksumPaths['Settings']    = "/var/local/emhttp/plugins/$plugin/settings.json";
 $checksumPaths['Waiting']     = "/tmp/checksum/waiting";
@@ -20,7 +20,7 @@ $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
 
 if ( ! is_dir("/var/local/emhttp/plugins/checksum") )
 {
-  mkdir("/var/local/emhttp/plugins/checksum");
+  mkdir("/var/local/emhttp/plugins/checksum",0777,true);
 }
 
 
@@ -30,7 +30,10 @@ if ( ! file_exists($scriptPaths['inotifywait']) )
   return;
 }
 
-exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
+if ( ! file_exists($scriptPaths['checksuminotifywait']) )
+{
+  @copy($scriptPaths['inotifywait'],$scriptPaths['checksuminotifywait']);
+}
 
 if ( ! file_exists($checksumPaths['Settings']) )
 {

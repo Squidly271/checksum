@@ -308,7 +308,10 @@ switch ($_POST['action']) {
 case 'inotifywait':
   if ( file_exists($scriptPaths['inotifywait']) )
   {
-    @exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
+    if ( ! file_exists($scriptPaths['checksuminotifywait']) )
+    {
+      @copy($scriptPaths['inotifywait'],$scriptPaths['checksuminotifywait']);
+    }
   } else {
     echo "not installed";
   }

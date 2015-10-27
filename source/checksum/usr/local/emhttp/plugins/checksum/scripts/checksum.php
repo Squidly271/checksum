@@ -127,6 +127,10 @@ function is_parity_running()
 
   $vars = array();
 
+  if ( ! file_exists($unRaidPaths['Variables']) )
+  {
+    return false;
+  }
   $vars = parse_ini_file($unRaidPaths['Variables']);
 
   return ( $vars['mdResync'] != "0" );

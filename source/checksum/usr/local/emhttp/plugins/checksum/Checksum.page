@@ -44,7 +44,7 @@ if ( <?=$unRaidStarted?> == false )
       title: "unRaid array not started",
       text: "The array must be started to make changes to this plugin",
       html: true,
-      showConfirmButton: false,
+      showConfirmButton: true,
       type: "error"
     });
     return;
