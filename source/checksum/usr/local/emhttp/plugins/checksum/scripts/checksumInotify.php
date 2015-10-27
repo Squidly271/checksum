@@ -32,7 +32,7 @@ if ( ! file_exists($scriptPaths['inotifywait']) )
 
 if ( ! file_exists($scriptPaths['checksuminotifywait']) )
 {
-  @copy($scriptPaths['inotifywait'],$scriptPaths['checksuminotifywait']);
+  exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']." >/dev/null 2>&1");
 }
 
 if ( ! file_exists($checksumPaths['Settings']) )
