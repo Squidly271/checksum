@@ -45,7 +45,7 @@ if ( ! file_exists($checksumPaths['Settings']) )
   }
 }
 
-
+chmod($scriptPaths['checksuminotifywait'],0777);
 
 $AllSettings = json_decode(file_get_contents($checksumPaths['Settings']),true);
 print_r($AllSettings);
