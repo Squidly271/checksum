@@ -32,7 +32,8 @@ if ( ! file_exists($scriptPaths['inotifywait']) )
 
 if ( ! file_exists($scriptPaths['checksuminotifywait']) )
 {
-  exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']." >/dev/null 2>&1");
+  exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
+  file_put_contents("/tmp/checksum/test","whatever");
 }
 
 if ( ! file_exists($checksumPaths['Settings']) )
@@ -45,7 +46,7 @@ if ( ! file_exists($checksumPaths['Settings']) )
   }
 }
 
-chmod($scriptPaths['checksuminotifywait'],0777);
+#chmod($scriptPaths['checksuminotifywait'],0777);
 
 $AllSettings = json_decode(file_get_contents($checksumPaths['Settings']),true);
 print_r($AllSettings);
