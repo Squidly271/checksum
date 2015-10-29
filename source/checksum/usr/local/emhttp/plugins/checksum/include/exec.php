@@ -114,8 +114,11 @@ function createShare($i,$settings = false)
   }
   $includedFiles = $settings['Include'];
   $excludedFiles = $settings['Exclude'];
-
-  $directories = array_diff(scandir("/mnt/user"),array(".",".."));
+  $directories = array();
+  if ( is_dir("/mnt/user") )
+  {
+    $directories = array_diff(scandir("/mnt/user"),array(".",".."));
+  }
 
   $userShares[] = "";
 
