@@ -309,8 +309,9 @@ function buildDisplay($allSettings)
 switch ($_POST['action']) {
 
 case 'inotifywait':
-  if ( ! file_exists($scriptPaths['inotifywait']) )
+  if ( file_exists($scriptPaths['inotifywait']) )
   {
+  } else {
     echo "not installed";
   }
   break;
@@ -612,7 +613,7 @@ case 'run_now':
   $share = "/mnt/user/".urldecode(($_POST['share']));
   $custom = urldecode(($_POST['custom']));
 
-  $status = exec('ps -A -f | grep -v grep | grep "checksumInotify.sh"');
+  $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
 
   if ( ! $status )
   {

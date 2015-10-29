@@ -35,5 +35,5 @@ fi
 
 echo "Monitoring $@" >> /tmp/checksum/log.txt
 
-inotifywait -m -r  -e close_write --timefmt "%s" --format "***%T***%w" "$@" >$pipe 2>>/tmp/checksum/log.txt
+/tmp/checksum/checksum_inotifywait -m -r  -e close_write --timefmt "%s" --format "***%T***%w" "$@" >$pipe 2>>/tmp/checksum/log.txt &
 

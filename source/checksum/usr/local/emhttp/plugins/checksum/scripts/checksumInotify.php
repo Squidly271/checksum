@@ -30,6 +30,10 @@ if ( ! file_exists($scriptPaths['inotifywait']) )
   return;
 }
 
+if ( ! file_exists($scriptPaths['checksuminotifywait']) )
+{
+  exec("cp ".$scriptPaths['inotifywait']." ".$scriptPaths['checksuminotifywait']);
+}
 
 if ( ! file_exists($checksumPaths['Settings']) )
 {
