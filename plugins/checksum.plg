@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.24">
-<!ENTITY md5       "3eb02de01f4fd76c8a72be1d284ee5ea">
+<!ENTITY version   "2015.10.29">
+<!ENTITY md5       "6738d3d109517cf5a37a699187909176">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,11 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.10.29###
+- Fix not starting monitor on boot
+- Suppress extraneous messages appearing on local monitor
+- Fix issue if user shares not enabled.
+
 ###2015.10.24###
 - Add in ability to run verifications against shares or disks
 - Revised logging
