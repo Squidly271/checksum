@@ -1,7 +1,6 @@
 #!/bin/bash
 
 pkill -15 -f checksumInotify1.sh
-pkill -15 -f checksum_inotifywait
 pkill -15 -f checksum.php
 pkill -15 -f checksumInotify.sh
 pkill -15 -f verify.php
