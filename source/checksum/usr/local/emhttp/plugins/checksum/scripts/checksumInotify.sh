@@ -2,9 +2,9 @@
 
 pipe=/tmp/checksumPipe
 
-if [[ -e /boot/config/plugins/checksum/numwatches ]]
+if [[ -e /boot/config/plugins/checksum/settings/numwatches ]]
 then
-  numwatches=`cat /boot/config/plugins/checksum/numwatches`
+  numwatches=`cat /boot/config/plugins/checksum/settings/numwatches`
 else
   numwatches=524288
 fi
@@ -12,9 +12,9 @@ fi
 echo "Setting maximum number of watches to $numwatches" >> /tmp/checksum/log.txt
 echo $numwatches > /proc/sys/fs/inotify/max_user_watches
 
-if [[ -e /boot/config/plugins/checksum/numqueue ]]
+if [[ -e /boot/config/plugins/checksum/settings/numqueue ]]
 then
-  numqueue=`cat /boot/config/plugins/checksum/numqueue`
+  numqueue=`cat /boot/config/plugins/checksum/settings/numqueue`
 else
   numqueue=16384
 fi

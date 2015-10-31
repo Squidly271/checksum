@@ -356,7 +356,7 @@ $hashFilesToCheck = array();
 
 getHashFiles($testPath);
 
-#print_r($hashFilesToCheck);
+print_r($hashFilesToCheck);
 
 
 $filesToCheck = array();

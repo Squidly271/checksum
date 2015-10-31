@@ -268,18 +268,11 @@ function createShare($i,$settings = false)
   $t .= "<td><b>Excluded Files:</b></td>";
   $t .= "<td><input type='text' id='excluded$i' $includeFlag class='narrow' oninput='validateInclude($i);' value='$excludedFiles'></input></td><tr>";
 
-  $t .= "<td><b>Manual Verify (% to Check):</b></td>";
-  $t .= "<td><input type='number' id='percent$i' class='narrow' value='100'></input></td>";
-  $t .= "<td><b>Manual Verify (% to start at):</b></td>";
-  $t .= "<td><input type='number' id='last$i' class='narrow' value='0'></input></td>";
-
   $t .= "</tr></table>";
 
   $t .= "</td></tr></table>";
 
   $t .= "<center><input type='button' id='apply$i' value='Apply' onclick='apply($i);' disabled></input>";
-  $t .= "<input type='button' id='run$i' value='Add To Queue' $runSetting onclick='runNow($i);'></input>";
-  $t .= "<input type='button' id='verify$i'  value='Verify Now' onclick='verifyNow($i);'></input>";
   $t .= "<input type='button' id='delete$i' value='Delete' onclick='deleteMonitor($i);'></input></center>";
 
   if ( $runSetting == "disabled" )
@@ -304,6 +297,23 @@ function buildDisplay($allSettings)
   return $output;
 }
 
+function createHeader()
+{
+  $output = "<center><font size='3'><b>Creation Settings</b></font></center><br><br><br>";
+  return $output;
+}
+
+function createFooter()
+{
+  $output = "<center><input type='button' value='Add Another Share' id='addMonitor' onclick='addMonitor();'></input></center>";
+  return $output;
+}
+
+
+
+
+
+
 ######## BEGIN MAIN #############
 
 switch ($_POST['action']) {
@@ -316,7 +326,7 @@ case 'inotifywait':
   }
   break;
 
-case 'initialize':
+case 'show_create':
 
   if ( file_exists($checksumPaths['usbSettings']) )
   {
@@ -326,81 +336,11 @@ case 'initialize':
     $shareSettings = array();
   }
 
-  $output = buildDisplay($shareSettings);
-  if ( file_exists($checksumPaths['usbGlobal']) )
-  {
-    copy($checksumPaths['usbGlobal'],$checksumPaths['Global']);
-    $globalSettings = json_decode(file_get_contents($checksumPaths['Global']),true);
-  } else {
-    $globalSettings['Parity'] = true;
-    $globalSettings['Pause'] = 3600;
-  }
+  $output = createHeader();
 
-  $output .= "<script>$('#pause').val('".$globalSettings['Pause']."');";
+  $output .= buildDisplay($shareSettings);
 
-  if ( $globalSettings['LogSave'] )
-  {
-    $output .= "$('#logsave').val('yes');";
-  } else {
-    $output .= "$('#logsave').val('no');";
-  }
-
-  if ( $globalSettings['IgnoreHour'] )
-  {
-    $output .= "$('#ignoreHour').val('yes');";
-  } else {
-    $output .= "$('#ignoreHour').val('no');";
-  }
-
-  if ( $globalSettings['Parity'] )
-  {
-    $output .= "$('#parity').val('yes');";
-  } else {
-    $output .= "$('#parity').val('no');";
-  }
-  if ( $globalSettings['Mover'] )
-  {
-    $output .= "$('#mover').val('yes');";
-  } else {
-    $output .= "$('#mover').val('no');";
-  }
-
-  if ( $globalSettings['Notify'] )
-  {
-    $output .= "$('#notify').val('yes');";
-  } else {
-    $output .= "$('#notify').val('no');";
-  }
-
-  if ( $globalSettings['NumWatches'] )
-  {
-    $numWatches = intval($globalSettings['NumWatches']);
-  } else {
-    if ( file_exists("/proc/sys/fs/inotify/max_user_watches") )
-    {
-      $numWatches = intval(file_get_contents("/proc/sys/fs/inotify/max_user_watches"));
-    } else {
-      $numWatches = 524288;
-    }
-  }
-
-  if ( $globalSettings['NumQueue'] )
-  {
-    $numQueue = intval($globalSettings['NumQueue']);
-  } else {
-    if ( file_exists("/proc/sys/fs/inotify/max_queued_events") )
-    {
-      $numQueue = intval(file_get_contents("/proc/sys/fs/inotify/max_queued_events"));
-    } else {
-      $numQueue = 16384;
-    }
-  }
-  $output .= "$('#numqueue').val('$numQueue');";
-
-  $output .= "$('#numwatches').val('$numWatches');";
-
-  $output .= "</script>";
-
+  $output .= createFooter();
   echo $output;
   break;
 
@@ -511,10 +451,9 @@ case 'delete':
     $newIndex = ++$newIndex;
   }
 
-  $output = buildDisplay($newSettings);
+  $output = createHeader().buildDisplay($newSettings).createFooter();
 
   echo $output;
-  echo "deleted";
 
   file_put_contents($checksumPaths['Settings'],json_encode($newSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
   file_put_contents($checksumPaths['usbSettings'],json_encode($newSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ));
@@ -544,7 +483,7 @@ case 'add':
   $allSettings['***']['IncludeAll'] = true;
   $allSettings['***']['Monitor']    = true;
 
-  $output = buildDisplay($allSettings);
+  $output = createHeader().buildDisplay($allSettings).createFooter();
   $output .= "<script>validatePath($maxIndex +1);</script>";
   echo $output;
   break;
@@ -610,7 +549,7 @@ case 'logline':
 
 case 'run_now':
 
-  $share = "/mnt/user/".urldecode(($_POST['share']));
+  $share = urldecode(($_POST['share']));
   $custom = urldecode(($_POST['custom']));
 
   $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
@@ -646,8 +585,8 @@ case 'change_global':
 
   $globalSettings['Pause'] = urldecode(($_POST['pause']));
 
-  file_put_contents("/boot/config/plugins/checksum/numqueue",$globalSettings['NumQueue']."\n");
-  file_put_contents("/boot/config/plugins/checksum/numwatches",$globalSettings['NumWatches']."\n");
+  file_put_contents("/boot/config/plugins/checksum/settings/numqueue",$globalSettings['NumQueue']."\n");
+  file_put_contents("/boot/config/plugins/checksum/settings/numwatches",$globalSettings['NumWatches']."\n");
   file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   break;
@@ -671,25 +610,212 @@ case 'verify_now':
 
   break;
 
-case 'initialize_disk':
+case 'show_manual':
+  $t = "<center><font size='3'><b>Single Disk Verify Settings</b></font><br><br>";
+  $t .= "<b>Disk To Check Manualy: ";
+
   $allDisks = array_diff(scandir("/mnt/"),array(".","..","disks","user","user0","cache"));
 
-  $output = "<select id='disk2check'>";
+  $t .= "<select id='disk2check'>";
 
   foreach ($allDisks as $Disk)
   {
     $diskNum = str_replace("disk","",$Disk);
-    $output .= "<option value='$diskNum'>$Disk</option>";
+    $t .= "<option value='$diskNum'>$Disk</option>";
   }
-  $output .= "</select>";
+  $t .= "</select>";
 
-  echo $output;
+  $t .= "<b>Percent To Check: </b><input type='number' id='diskpercent' value='100' class='narrow'></input";
+  $t .= "<b>Percent To Start At: </b><input type='number' id='disklastpercent' value='0' class='narrow'></input>";
+  $t .= "<input type='button' id='diskVerifyButton' value='Verify Disk' onclick='verifyDisk();'></input></center>";
+
+  $t .= "<br><hr><center><font size='3'><b>Manual Share Verification</b></font></center><br>";
+
+  if ( file_exists($checksumPaths['usbSettings']) )
+  {
+    copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
+    $shareSettings = json_decode(file_get_contents($checksumPaths['Settings']),true);
+  } else {
+    $shareSettings = array();
+  }
+
+  $maxLength = 0;
+  foreach ($shareSettings as $settings)
+  {
+    if ( strlen($settings['Path']) > $maxLength )
+    {
+      $maxLength = strlen($settings['Path']);
+    }
+  }
+
+
+  $t .= "<center>";
+  foreach ($shareSettings as $settings)
+  {
+    $i = $settings['Index'];
+
+    $t .= "<span id='share$i' hidden>".$settings['Path']."</span>";
+    $t .= "<font face='Courier New'>";
+    $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
+    $t .= "</font>";
+    $t .= "<b>Percent To Check: </b><input type='number' id='percent$i' class='narrow' value='100'></input>";
+    $t .= "<b>Percent To Start At: </b><input type='number' id='last$i' class='narrow' value='0'></input>";
+    $t .= "<input type='button' id='verify$i' value='Verify Share' onclick='verifyNow($i);'></input>";
+    $t .= "<br><br>";
+  }
+  $t .= "</center>";
+
+  $t .= "<hr>";
+  $t .= "<center><font size='3'><b>Manual Checksum Creation</b></font></center><br>";
+
+  $t .= "<center>";
+  foreach ($shareSettings as $settings)
+  {
+    $i = $settings['Index'];
+    $t .= "<font face='Courier New'>";
+    $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
+    $t .= "</font><input type='button' id='run$i' value='Create Checksums' onclick='runNow($i);'></input><br>";
+  }
+  echo $t;
   break;
 
 
+case 'show_global':
+  $t = "<center><font size='3'><b>Global Settings</b></font></center><br><br>";
+  $t .= "<center><table style='width:40%'>
+           <tr>
+             <td>
+               <b>Pause During Parity Check / Rebuild:</b>
+             </td>
+             <td>
+               <select id='parity' onchange='changeGlobal();'>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
+               </select>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <b>Pause Before Creation:</b>
+             </td>
+             <td>
+               <select id='pause' onchange='changeGlobal();'>
+                <option value='60'>1 Minute</option>
+                <option value='300'>5 Minutes</option>
+                <option value='600'>10 Minutes</option>
+                <option value='1800'>30 Minutes</option>
+                <option value='3600'>2 Hour</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <b>Ignore Minor Corz Time Stamp Issues:</b>
+            </td>
+            <td>
+              <select id='ignoreHour' onchange='changeGlobal();'>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <b>Maximum Number Of Inotify Watches:</b>
+            </td>
+            <td>
+              <input type='number' id='numwatches' class='narrow' oninput='validateWatches();'></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <b>Maximum Number Of Queued Events:</b>
+            </td>
+            <td>
+              <input type='number' id='numqueue' class='narrow' onput='validateWatches();'></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <b>Notify On Verification Failure:</b>
+            </td>
+            <td>
+              <select id='notify' onchange='changeGlobal();'>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <b>Save Logs To Flash:</b>
+            </td>
+            <td>
+              <select id='logsave' onchange='changeGlobal();'>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
+              </select>
+            </td>
+          </tr>
+        </table></center>";
+  $t .= "<center>
+    <input type='button' id='globalApply' onclick='globalApply();' value='Apply' disabled></input>
+    </center>
+  ";
+
+  if ( file_exists($checksumPaths['usbGlobal']) )
+  {
+    copy($checksumPaths['usbGlobal'],$checksumPaths['Global']);
+    $globalSettings = json_decode(file_get_contents($checksumPaths['Global']),true);
+  } else {
+    $globalSettings['Parity'] = true;
+    $globalSettings['Pause'] = 3600;
+  }
+
+  if ( $globalSettings['NumWatches'] )
+  {
+    $numWatches = intval($globalSettings['NumWatches']);
+  } else {
+    if ( file_exists("/proc/sys/fs/inotify/max_user_watches") )
+    {
+      $numWatches = intval(file_get_contents("/proc/sys/fs/inotify/max_user_watches"));
+    } else {
+      $numWatches = 524288;
+    }
+  }
+
+  if ( $globalSettings['NumQueue'] )
+  {
+    $numQueue = intval($globalSettings['NumQueue']);
+  } else {
+    if ( file_exists("/proc/sys/fs/inotify/max_queued_events") )
+    {
+      $numQueue = intval(file_get_contents("/proc/sys/fs/inotify/max_queued_events"));
+    } else {
+      $numQueue = 16384;
+    }
+  }
+
+
+  $t .= "<script>";
+
+  $t .= "$('#pause').val('".$globalSettings['Pause']."');";
+
+  $t .= ($globalSettings['LogSave']) ? "$('#logsave').val('yes');" : "$('#logsave').val('no');";
+  $t .= ($globalSettings['IgnoreHour']) ? "$('#ignoreHour').val('yes');" : "$('#ignoreHour').val('no');";
+  $t .= ($globalSettings['Parity']) ? "$('#parity').val('yes');" : "$('#parity').val('no');";
+  $t .= ($globalSettings['Notify']) ? "$('#notify').val('yes');" : "$('#notify').val('no');";
+
+  $t .= "$('#numqueue').val('$numQueue');";
+  $t .= "$('#numwatches').val('$numWatches');";
+
+  $t .= "</script>";
 
 
 
+
+  echo $t;
+  break;
 
 
 
