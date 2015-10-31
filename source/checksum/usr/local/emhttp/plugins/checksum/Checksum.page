@@ -318,6 +318,11 @@ function runNow(index)
   {
     if (data)
     {
+      swal({
+        title: "",
+        text: "Added "+share+" to queue",
+        type: "success"
+      });
       $("#run"+index).prop("disabled",false);
     }
   });
@@ -376,6 +381,11 @@ function verifyDisk()
   {
     if (data)
     {
+      swal({
+        title: "",
+        text: "Now verifying disk #"+share,
+        type: "success"
+      });
       $("#diskVerifyButton").prop("disabled",false);
     }
   });
@@ -398,6 +408,12 @@ function verifyNow(index)
   {
     if (data)
     {
+      swal({
+        title: "",
+        text: "Now verifying "+share,
+        type: "success"
+      });
+
       $("#verify"+index).prop("disabled",false);
     }
   });

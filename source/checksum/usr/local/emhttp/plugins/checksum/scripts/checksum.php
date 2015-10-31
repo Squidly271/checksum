@@ -133,7 +133,7 @@ function is_parity_running()
   }
   $vars = parse_ini_file($unRaidPaths['Variables']);
 
-  return ( $vars['mdResync'] != "0" );
+  return ( intval($vars['mdResyncPos']) );
 }
 
 function logger($string, $newLine = true)

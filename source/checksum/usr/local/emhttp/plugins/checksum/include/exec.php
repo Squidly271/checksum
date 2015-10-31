@@ -566,8 +566,6 @@ case 'run_now':
   $commandLine = 'echo "***'.time().'***'.$share.'***recursive" >> /tmp/checksumPipe';
   logger("Manually Added $share to queue\n");
 
-  sleep(2);
-
   exec($commandLine);
 
   echo "done";
@@ -604,8 +602,6 @@ case 'verify_now':
 
   exec("/usr/local/emhttp/plugins/checksum/scripts/start_verify.sh");
 
-  sleep(2);
-
   echo "done";
 
   break;
@@ -615,6 +611,7 @@ case 'show_manual':
   $t .= "<b>Disk To Check Manualy: ";
 
   $allDisks = array_diff(scandir("/mnt/"),array(".","..","disks","user","user0","cache"));
+  sort($allDisks, SORT_NATURAL);
 
   $t .= "<select id='disk2check'>";
 
@@ -639,42 +636,44 @@ case 'show_manual':
     $shareSettings = array();
   }
 
-  $maxLength = 0;
-  foreach ($shareSettings as $settings)
+  if ( sizeof($shareSettings) )
   {
-    if ( strlen($settings['Path']) > $maxLength )
+    $maxLength = 0;
+    foreach ($shareSettings as $settings)
     {
-      $maxLength = strlen($settings['Path']);
+      if ( strlen($settings['Path']) > $maxLength )
+      {
+        $maxLength = strlen($settings['Path']);
+      }
     }
-  }
 
+    $t .= "<center>";
+    foreach ($shareSettings as $settings)
+    {
+      $i = $settings['Index'];
 
-  $t .= "<center>";
-  foreach ($shareSettings as $settings)
-  {
-    $i = $settings['Index'];
+      $t .= "<span id='share$i' hidden>".$settings['Path']."</span>";
+      $t .= "<font face='Courier New'>";
+      $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
+      $t .= "</font>";
+      $t .= "<b>Percent To Check: </b><input type='number' id='percent$i' class='narrow' value='100'></input>";
+      $t .= "<b>Percent To Start At: </b><input type='number' id='last$i' class='narrow' value='0'></input>";
+      $t .= "<input type='button' id='verify$i' value='Verify Share' onclick='verifyNow($i);'></input>";
+      $t .= "<br><br>";
+    }
+    $t .= "</center>";
 
-    $t .= "<span id='share$i' hidden>".$settings['Path']."</span>";
-    $t .= "<font face='Courier New'>";
-    $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
-    $t .= "</font>";
-    $t .= "<b>Percent To Check: </b><input type='number' id='percent$i' class='narrow' value='100'></input>";
-    $t .= "<b>Percent To Start At: </b><input type='number' id='last$i' class='narrow' value='0'></input>";
-    $t .= "<input type='button' id='verify$i' value='Verify Share' onclick='verifyNow($i);'></input>";
-    $t .= "<br><br>";
-  }
-  $t .= "</center>";
+    $t .= "<hr>";
+    $t .= "<center><font size='3'><b>Manual Checksum Creation</b></font></center><br>";
 
-  $t .= "<hr>";
-  $t .= "<center><font size='3'><b>Manual Checksum Creation</b></font></center><br>";
-
-  $t .= "<center>";
-  foreach ($shareSettings as $settings)
-  {
-    $i = $settings['Index'];
-    $t .= "<font face='Courier New'>";
-    $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
-    $t .= "</font><input type='button' id='run$i' value='Create Checksums' onclick='runNow($i);'></input><br>";
+    $t .= "<center>";
+    foreach ($shareSettings as $settings)
+    {
+      $i = $settings['Index'];
+      $t .= "<font face='Courier New'>";
+      $t .= str_replace(" ","&nbsp;",str_pad($settings['Path'],$maxLength+5));
+      $t .= "</font><input type='button' id='run$i' value='Create Checksums' onclick='runNow($i);'></input><br>";
+    }
   }
   echo $t;
   break;
