@@ -9,7 +9,6 @@ else
   numwatches=524288
 fi
 
-echo "Setting maximum number of watches to $numwatches" >> /tmp/checksum/log.txt
 echo $numwatches > /proc/sys/fs/inotify/max_user_watches
 
 if [[ -e /boot/config/plugins/checksum/settings/numqueue ]]
@@ -19,14 +18,9 @@ else
   numqueue=16384
 fi
 
-echo "Setting maximum number of queued events to $numqueue" >> /tmp/checksum/log.txt
+echo $numqueue > /proc/sys/fs/inotify/max_queued_events
 
-#if [[ ! -e /tmp/checksum/checksum_inotifywait ]]
-#then
-#  cp /usr/bin/inotifywait /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
-#fi
-#chmod +x /tmp/checksum/checksum_inotifywait >/dev/null 2>&1
-
+echo "Set maximum number of watches to $numwatches, maximum queued events to $numqueue" >> /tmp/checksum/log.txt
 
 if [[ ! -p $pipe ]]
 then

@@ -568,6 +568,7 @@ case 'run_now':
 
   exec($commandLine);
 
+  sleep (2);
   echo "done";
 
   break;
@@ -608,7 +609,7 @@ case 'verify_now':
 
 case 'show_manual':
   $t = "<center><font size='3'><b>Single Disk Verify Settings</b></font><br><br>";
-  $t .= "<b>Disk To Check Manualy: ";
+  $t .= "<b>Disk To Check Manually: ";
 
   $allDisks = array_diff(scandir("/mnt/"),array(".","..","disks","user","user0","cache"));
   sort($allDisks, SORT_NATURAL);
@@ -626,8 +627,6 @@ case 'show_manual':
   $t .= "<b>Percent To Start At: </b><input type='number' id='disklastpercent' value='0' class='narrow'></input>";
   $t .= "<input type='button' id='diskVerifyButton' value='Verify Disk' onclick='verifyDisk();'></input></center>";
 
-  $t .= "<br><hr><center><font size='3'><b>Manual Share Verification</b></font></center><br>";
-
   if ( file_exists($checksumPaths['usbSettings']) )
   {
     copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
@@ -638,6 +637,8 @@ case 'show_manual':
 
   if ( sizeof($shareSettings) )
   {
+    $t .= "<br><hr><center><font size='3'><b>Manual Share Verification</b></font></center><br>";
+
     $maxLength = 0;
     foreach ($shareSettings as $settings)
     {
@@ -703,7 +704,7 @@ case 'show_global':
                 <option value='300'>5 Minutes</option>
                 <option value='600'>10 Minutes</option>
                 <option value='1800'>30 Minutes</option>
-                <option value='3600'>2 Hour</option>
+                <option value='3600'>1 Hour</option>
               </select>
             </td>
           </tr>

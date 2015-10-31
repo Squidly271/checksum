@@ -16,9 +16,18 @@ checksumLog="$logBase/Checksum-$logTime.txt"
 
 mkdir -p "/boot/config/plugins/checksum/logs" >/dev/null 2>&1
 
-sed 's/$/\r/' < "/tmp/checksum/log.txt" > "$commandLog"
-sed 's/$/\r/' < "/tmp/checksum/verifylog.txt" > "$verifyLog"
-sed 's/$/\r/' < "/tmp/checksum/checksumLog.txt" > "$checksumLog"
+if [[ -e "/tmp/checksum/log.txt" ]]
+then
+  sed 's/$/\r/' < "/tmp/checksum/log.txt" > "$commandLog"
+fi
+if [[ -e "/tmp/checksum/verifylog.txt" ]]
+then
+  sed 's/$/\r/' < "/tmp/checksum/verifylog.txt" > "$verifyLog"
+fi
+if [[ -e "/tmp/checksum/checksumLog.txt" ]]
+then
+  sed 's/$/\r/' < "/tmp/checksum/checksumLog.txt" > "$checksumLog"
+fi
 
 
 rm /tmp/checksum/running > /dev/null 2>&1
