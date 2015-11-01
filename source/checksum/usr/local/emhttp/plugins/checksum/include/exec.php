@@ -21,15 +21,18 @@ $checksumPaths['Log']               = "/tmp/checksum/log.txt";
 $checksumPaths['FailureLog']        = "/tmp/checksum/failurelog.txt";
 $checksumPaths['Global']            = "/var/local/emhttp/plugins/$plugin/global.json";
 $checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/settings/global.json";
+$checksumPaths['Schedule']          = "/boot/config/plugins/$plugin/settings/schedule.json";
 
 $unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
 
-$scriptPaths['InitializeWatch']     = "/usr/local/emhttp/plugins/$plugin/scripts.checksumInotify.php";
+$scriptPaths['InitializeWatch']     = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify.php";
 $scriptPaths['CreateWatch']         = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify.sh";
 $scriptPaths['b2sum']               = "/usr/local/emhttp/plugins/$plugin/include/b2sum";
 $scriptPaths['MonitorWatch']        = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify1.sh";
 $scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
 $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
+$scriptPaths['RemoveCron']          = "/usr/local/emhttp/plugins/$plugin/scripts/checksumRemoveCron.php";
+$scriptPaths['UpdateCron']          = "/usr/local/emhttp/plugins/$plugin/scripts/checksumUpdateCron.php";
 
 if ( ! is_dir(pathinfo($checksumPaths['tmpSettings'],PATHINFO_DIRNAME)) )
 {
@@ -309,7 +312,222 @@ function createFooter()
   return $output;
 }
 
+function createCron($share,$index,$schedule)
+{
+  $t = "<table>
+        <tr>
+          <td>
+            <b>How Often To Run:</b>
+          </td>
+          <td>
+            <select id='frequency$share$index' class='narrow' onchange='changeFrequency(&quot;$share&quot;,&quot;$index&quot;);'>
+              <option value='never'>Never</option>
+              <option value='daily'>Daily</option>
+              <option value='weekly'>Weekly</option>
+              <option value='monthly'>Monthly</option>
+              <option value='yearly'>Yearly</option>
+              <option value='custom'>Custom</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>Day Of Week:</b>
+          </td>
+          <td>
+            <select id='weekday$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'>
+              <option value='0'>Sunday</option>
+              <option value='1'>Monday</option>
+              <option value='2'>Tuesday</option>
+              <option value='3'>Wednesday</option>
+              <option value='4'>Thursday</option>
+              <option value='5'>Friday</option>
+              <option value='6'>Saturday</option>
+            </select>
+          </td>
+          <td>
+            <b>Day Of Month</b>
+          </td>
+          <td>
+            <select id='monthday$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'>";
 
+  for ( $day = 1; $day < 32; $day++)
+  {
+    $t .= "<option value='$day'>$day";
+
+    switch ($day)
+    {
+      case "1":
+        $t .= "st";
+        break;
+      case "2":
+        $t .= "nd";
+        break;
+      case "3":
+        $t .= "rd";
+        break;
+      case "21":
+        $t .= "st";
+        break;
+      case "22":
+        $t .= "nd";
+        break;
+      case "23":
+        $t .= "rd";
+        break;
+      case "31":
+        $t .= "st";
+        break;
+      default:
+        $t .= "th";
+        break;
+    }
+    $t .= "</option>";
+  }
+  $t .= "<option value='L'>Last Day</option>";
+  $t .= "</select>";
+  $t .= "</td>
+      </tr>
+      <tr>
+        <td>
+          <b>Month:</b>
+        </td>
+        <td>
+          <select id='month$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'>
+            <option value='1'>January</option>
+            <option value='2'>February</option>
+            <option value='3'>March</option>
+            <option value='4'>April</option>
+            <option value='5'>May</option>
+            <option value='6'>June</option>
+            <option value='7'>July</option>
+            <option value='8'>August</option>
+            <option value='9'>September</option>
+            <option value='10'>October</option>
+            <option value='11'>November</option>
+            <option value='12'>December</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b>Hour:</b>
+        </td>
+        <td>
+          <select id='hour$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'>";
+  for ( $hour = 0; $hour < 24; $hour++ )
+  {
+    $displayHour = $hour;
+    if ($displayHour < 12)
+    {
+      $amPM = "am";
+    } else {
+      $amPM = "pm";
+      $displayHour = $displayHour - 12;
+    }
+    if ($displayHour == 0)
+    {
+      $displayHour = 12;
+    }
+
+    $t .= "<option value='$hour'>$displayHour$amPM</option>";
+  }
+  $t .= "</select>";
+  $t .= "</td>
+         <td>
+           <b>Minute:</b>
+         </td>
+         <td>";
+
+  $t .= "<select id='minute$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'>";
+  for ( $minute = 0; $minute < 60; $minute++ )
+  {
+    $t .= "<option value='$minute'>$minute</option>";
+  }
+  $t .= "<select>
+       </td>
+     </tr>
+     <tr>
+       <td>
+         <b>Custom Cron Entry:</b>
+       </td>
+       <td>
+         <input id='custom$share$index' type='text' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'></input>
+       </td>
+       <td>
+         <b>Generated Cron Entry:</b>
+       </td>
+       <td>
+         <span id='cron$share$index'></span>
+       </td>
+     </tr>";
+
+  if ( ($share == "Verify") || ($share == "Disk") )
+  {
+    $t .= "<tr>
+             <td>
+               <b>Percent To Verify</b>
+             </td>
+             <td>
+               <input type='number' id='percent$share$index' class='narrow' onchange='scheduleApply(&quot;$share&quot;,&quot;$index&quot;);'></input>
+             </td>
+             <td>
+               <b>Last Scheduled Check:</b>
+             </td>
+             <td>
+               <span id='lastPercent$share$index'></span>
+             </td>
+           </tr>";
+  }
+  $t .= "<tr>
+           <td>
+             <input type='button' id='apply$share$index' value='Apply' disabled onclick='applyFrequency(&quot;$share&quot;,&quot;$index&quot;);'></input>
+           </td>
+         </tr>
+       </table>";
+
+  $t .= "<script>";
+
+  if ( is_array($schedule) )
+  {
+    $t .= "$('#frequency$share$index').val('".$schedule['Frequency']."');";
+    $t .= "$('#weekday$share$index').val('".$schedule['DayOfWeek']."');";
+    $t .= "$('#monthday$share$index').val('".$schedule['DayOfMonth']."');";
+    $t .= "$('#month$share$index').val('".$schedule['Month']."');";
+    $t .= "$('#hour$share$index').val('".$schedule['Hour']."');";
+    $t .= "$('#minute$share$index').val('".$schedule['Minute']."');";
+    $t .= "$('#custom$share$index').val('".$schedule['Custom']."');";
+
+    if ( $schedule['PercentToCheck'] )
+    {
+      $t .= "$('#percent$share$index').val('".$schedule['PercentToCheck']."');";
+    } else {
+      $t .= "$('#percent$share$index').val('10');";
+    }
+ } else {
+    $t .= "$('#percent$share$index').val('10');";
+  }
+
+  if ( $schedule['LastStatus'] )
+  {
+    $lastCheckedLine = "<font color=red>";
+  } else {
+    $lastCheckedLine = "<font color=green>";
+  }
+
+  if ( $schedule['LastChecked'] )
+  {
+    $lastCheckedLine .= "->".$schedule['LastChecked']."% on ".$schedule['LastCheckedDate']."</font>";
+    $t .= "$('#lastPercent$share$index').html('$lastCheckedLine');";
+  } else {
+    $t .= "$('#lastPercent$share$index').html('<font color=red>Never</font>');";
+  }
+
+  $t .= "changeFrequency('$share','$index', true);</script>";
+
+
+  return $t;
+}
 
 
 
@@ -817,8 +1035,179 @@ case 'show_global':
   echo $t;
   break;
 
+case "show_schedule":
+  if ( file_exists($checksumPaths['usbSettings']) )
+  {
+    copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
+    $shareSettings = json_decode(file_get_contents($checksumPaths['Settings']),true);
+  } else {
+    $shareSettings = array();
+  }
+
+  if ( file_exists($checksumPaths['Schedule']) )
+  {
+    $allSchedule = json_decode(file_get_contents($checksumPaths['Schedule']),true);
+    $createSchedule = $allSchedule['Create'];
+    $verifySchedule = $allSchedule['Verify'];
+  }
+
+  if ( ! is_array($createSchedule) )
+  {
+    $createSchedule = array();
+  }
+  if ( ! is_array($verifySchedule) )
+  {
+    $verifySchedule = array();
+  }
+
+  if ( ! sizeof($shareSettings) )
+  {
+    echo "<center><font size='3' color='red'>You must define at least one creation share</font></center>";
+    return;
+  }
+
+  $index = 0;
+  $t = "<center><font size='3'><b>Creation Schedule</b></font></center><br><br><center><table style='width:70%'>";
+  foreach ($shareSettings as $settings)
+  {
+    $tag = "Create";
+    $t .= "<tr><td style='width:30%'>";
+    $t .= "<font size='2'><b>".$settings['Path']."</b></font><br>";
+
+    if ( $settings['Monitor'] )
+    {
+      $t .= "<font color='green'>Also Monitored Automatically For Changes</font>";
+    }
+
+    $t .= "<span id='path$tag$index' hidden>".$settings['Path']."</span>";
+    $t .= "</td><td>";
+    $t .= createCron($tag,$index,$createSchedule[$settings['Path']]);
+    $t .= "<td><br><br></tr>";
+    $t .= "<tr><td></td></tr><tr><td></td></tr>";
+
+    $index = ++$index;
+  }
+  $t .= "</table></center>";
+
+  echo $t;
+  break;
 
 
+case "apply_schedule":
+  $frequency = urldecode(($_POST['frequency']));
+  $weekday = urldecode(($_POST['weekday']));
+  $monthday = urldecode(($_POST['monthday']));
+  $month = urldecode(($_POST['month']));
+  $hour = urldecode(($_POST['hour']));
+  $minute = urldecode(($_POST['minute']));
+  $custom = urldecode(($_POST['custom']));
+  $path = urldecode(($_POST['path']));
+  $cron = urldecode(($_POST['cron']));
+  $percent = urldecode(($_POST['percent']));
+  $share = urldecode(($_POST['share']));
+
+
+  if ( file_exists($checksumPaths['Schedule']) )
+  {
+    $allSchedule = json_decode(file_get_contents($checksumPaths['Schedule']),true);
+  } else {
+    $allSchedule = array();
+  }
+
+  $allSchedule[$share][$path]['Path']           = $path;
+  $allSchedule[$share][$path]['Frequency']      = $frequency;
+  $allSchedule[$share][$path]['DayOfWeek']      = $weekday;
+  $allSchedule[$share][$path]['DayOfMonth']     = $monthday;
+  $allSchedule[$share][$path]['Month']          = $month;
+  $allSchedule[$share][$path]['Hour']           = $hour;
+  $allSchedule[$share][$path]['Minute']         = $minute;
+  $allSchedule[$share][$path]['Custom']         = $custom;
+  $allSchedule[$share][$path]['GeneratedCron']  = $cron;
+  $allSchedule[$share][$path]['PercentToCheck'] = $percent;
+
+  file_put_contents($checksumPaths['Schedule'],json_encode($allSchedule, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+
+  exec($scriptPaths['RemoveCron']);
+  exec($scriptPaths['UpdateCron']);
+
+  echo "ok";
+  break;
+
+case "show_verify_schedule":
+  $tag = urldecode(($_POST['tag']));
+
+  if ( file_exists($checksumPaths['usbSettings']) )
+  {
+    copy($checksumPaths['usbSettings'],$checksumPaths['Settings']);
+    $shareSettings = json_decode(file_get_contents($checksumPaths['Settings']),true);
+  } else {
+    $shareSettings = array();
+  }
+
+  if ( file_exists($checksumPaths['Schedule']) )
+  {
+    $allSchedule = json_decode(file_get_contents($checksumPaths['Schedule']),true);
+    $createSchedule = $allSchedule['Create'];
+    $verifySchedule = $allSchedule['Verify'];
+    $diskSchedule = $allSchedule['Disk'];
+  }
+
+  if ( ! is_array($createSchedule) )
+  {
+    $createSchedule = array();
+  }
+  if ( ! is_array($verifySchedule) )
+  {
+    $verifySchedule = array();
+  }
+  if ( ! is_array($diskSchedule) )
+  {
+    $diskSchedule = array();
+  }
+
+  if ( $tag == "Verify" )
+  {
+    $t = "<center><font size='3'><b>Share Verification Schedule</b></font></center><br><br><center><table style='width:70%'>";
+
+    if ( ! sizeof($shareSettings) )
+    {
+      echo "<center><font size='3' color='red'>You must define at least one creation share</font></center>";
+      return;
+    }
+  } else {
+    $t = "<center><font size='3'><b>Disk Verification Schedule</b></font></center><br><br><center><table style='width:70%'>";
+
+    $shareSettings = array_diff(scandir("/mnt/"),array(".","..","user","user0","disks","cache"));
+    sort($shareSettings, SORT_NATURAL);
+
+  }
+  $index = 0;
+
+
+  foreach ($shareSettings as $settings)
+  {
+    if ( $tag == "Verify" )
+    {
+      $path = $settings['Path'];
+      $cronSettings = $verifySchedule[$path];
+    } else {
+      $path = $settings;
+      $cronSettings = $diskSchedule[$path];
+    }
+
+    $t .= "<tr><td style='width:30%'>";
+    $t .= "<font size='2'><b>".$path."</b></font><br>";
+    $t .= "<span id='path$tag$index' hidden>".$path."</span>";
+    $t .= "</td><td>";
+    $t .= createCron($tag,$index,$cronSettings);
+    $t .= "<td><br><br></tr>";
+    $t .= "<tr><td></td></tr><tr><td></td></tr>";
+
+    $index = ++$index;
+  }
+  $t .= "</table></center>";
+
+  echo $t;
 
 }
 ?>

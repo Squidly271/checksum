@@ -567,9 +567,12 @@ $loggerLine .= "\n\n";
 
 logger($loggerLine);
 
-
-
-
+if ( count($failedFiles) )
+{
+  exit(1);
+} else {
+  exit(0);
+}
 
 
 

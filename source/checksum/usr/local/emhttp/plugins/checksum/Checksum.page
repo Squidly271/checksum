@@ -54,7 +54,7 @@ if ( <?=$unRaidStarted?> == false )
 
 $.post(URL,{action:'inotifywait'},function(data) {
   if (data)
-  {
+ {
     $("#restart").prop("disabled",true);
     swal({
       title: "inotify tools not installed!",
@@ -440,6 +440,9 @@ function changeView(button)
       $("#GlobalButton").prop("disabled",true);
       $("#CreateButton").prop("disabled",false);
       $("#ManualButton").prop("disabled",false);
+      $("#ScheduleButton").prop("disabled",false);
+      $("#VerifyButton").prop("disabled",false);
+      $("#DiskButton").prop("disabled",false);
 
       $.post(URL,{action:'show_global'}, function(data)
       {
@@ -454,6 +457,9 @@ function changeView(button)
       $("#GlobalButton").prop("disabled",false);
       $("#CreateButton").prop("disabled",true);
       $("#ManualButton").prop("disabled",false);
+      $("#ScheduleButton").prop("disabled",false);
+      $("#VerifyButton").prop("disabled",false);
+      $("#DiskButton").prop("disabled",false);
 
       $.post(URL,{action:'show_create'},function(data)
       {
@@ -468,6 +474,9 @@ function changeView(button)
       $("#GlobalButton").prop("disabled",false);
       $("#CreateButton").prop("disabled",false);
       $("#ManualButton").prop("disabled",true);
+      $("#ScheduleButton").prop("disabled",false);
+      $("#VerifyButton").prop("disabled",false);
+      $("#DiskButton").prop("disabled",false);
 
       $.post(URL,{action:'show_manual'},function(data)
       {
@@ -478,8 +487,203 @@ function changeView(button)
       });
 
       break;
+
+    case "ScheduleButton":
+      $("#GlobalButton").prop("disabled",false);
+      $("#CreateButton").prop("disabled",false);
+      $("#ManualButton").prop("disabled",false);
+      $("#ScheduleButton").prop("disabled",true);
+      $("#VerifyButton").prop("disabled",false);
+      $("#DiskButton").prop("disabled",false);
+
+      $.post(URL,{action:'show_schedule'}, function(data)
+      {
+        if (data)
+        {
+          $("#settings").html(data);
+        }
+      });
+      break;
+
+    case "VerifyButton":
+      $("#GlobalButton").prop("disabled",false);
+      $("#CreateButton").prop("disabled",false);
+      $("#ManualButton").prop("disabled",false);
+      $("#ScheduleButton").prop("disabled",false);
+      $("#VerifyButton").prop("disabled",true);
+      $("#DiskButton").prop("disabled",false);
+ 
+      $.post(URL,{action:'show_verify_schedule',tag:'Verify'},function(data)
+      {
+        if (data)
+        {
+          $("#settings").html(data);
+        }
+      });
+      break;
+    case "DiskButton":
+      $("#GlobalButton").prop("disabled",false);
+      $("#CreateButton").prop("disabled",false);
+      $("#ManualButton").prop("disabled",false);
+      $("#ScheduleButton").prop("disabled",false);
+      $("#VerifyButton").prop("disabled",false);
+      $("#DiskButton").prop("disabled",true);
+
+      $.post(URL,{action:'show_verify_schedule',tag:'Disk'},function(data)
+      {
+        if (data)
+        {
+          $("#settings").html(data);
+        }
+      });
+      break;
+
+
+
+
+
+
+
+
+
+
+
+
+
   }
 }
+
+function changeFrequency(share,index,initialize)
+{
+  var frequency = $("#frequency"+share+index).val();
+  
+  switch (frequency)
+  {
+    case "never":
+      $("#weekday"+share+index).prop("disabled",true);
+      $("#monthday"+share+index).prop("disabled",true);
+      $("#month"+share+index).prop("disabled",true);
+      $("#hour"+share+index).prop("disabled",true);
+      $("#minute"+share+index).prop("disabled",true);
+      $("#custom"+share+index).prop("disabled",true);
+      break;
+
+    case "daily":
+      $("#weekday"+share+index).prop("disabled",true);
+      $("#monthday"+share+index).prop("disabled",true);
+      $("#month"+share+index).prop("disabled",true);
+      $("#hour"+share+index).prop("disabled",false);
+      $("#minute"+share+index).prop("disabled",false);
+      $("#custom"+share+index).prop("disabled",true);
+      break;
+
+    case "weekly":
+      $("#weekday"+share+index).prop("disabled",false);
+      $("#monthday"+share+index).prop("disabled",true);
+      $("#month"+share+index).prop("disabled",true);
+      $("#hour"+share+index).prop("disabled",false);
+      $("#minute"+share+index).prop("disabled",false);
+      $("#custom"+share+index).prop("disabled",true);
+      break;
+
+    case "monthly":
+      $("#weekday"+share+index).prop("disabled",true);
+      $("#monthday"+share+index).prop("disabled",false);
+      $("#month"+share+index).prop("disabled",true);
+      $("#hour"+share+index).prop("disabled",false);
+      $("#minute"+share+index).prop("disabled",false);
+      $("#custom"+share+index).prop("disabled",true);
+      break;
+
+    case "yearly":
+      $("#weekday"+share+index).prop("disabled",true);
+      $("#monthday"+share+index).prop("disabled",false);
+      $("#month"+share+index).prop("disabled",false);
+      $("#hour"+share+index).prop("disabled",false);
+      $("#minute"+share+index).prop("disabled",false);
+      $("#custom"+share+index).prop("disabled",true);
+      break;
+   
+    case "custom":
+      $("#weekday"+share+index).prop("disabled",true);
+      $("#monthday"+share+index).prop("disabled",true);
+      $("#month"+share+index).prop("disabled",true);
+      $("#hour"+share+index).prop("disabled",true);
+      $("#minute"+share+index).prop("disabled",true);
+      $("#custom"+share+index).prop("disabled",false);
+      break;
+  }
+  generateCron(share,index);
+  if ( ! initialize )
+  {
+    $("#apply"+share+index).prop("disabled",false);
+  }
+}
+
+function applyFrequency(share,index)
+{
+  var frequency = $("#frequency"+share+index).val();
+  var weekday = $("#weekday"+share+index).val();
+  var monthday = $("#monthday"+share+index).val();
+  var month = $("#month"+share+index).val();
+  var hour = $("#hour"+share+index).val();
+  var minute = $("#minute"+share+index).val();
+  var custom = $("#custom"+share+index).val();
+  var path = $("#path"+share+index).html();
+  var cron = $("#cron"+share+index).html();
+  var percent = $("#percent"+share+index).val();
+
+  $.post(URL,{action:'apply_schedule',frequency:frequency,weekday:weekday,monthday:monthday,month:month,hour:hour,minute:minute,custom:custom,path:path,cron:cron,percent:percent,share:share}, function(data)
+  {
+    if (data)
+    {
+      swal({
+        title: "",
+        text: "Schedule Updated for "+path,
+        type: "success"
+      });
+      $("#apply"+share+index).prop("disabled",true);
+    }
+  });
+}
+
+function scheduleApply(share,index)
+{
+  $("#apply"+share+index).prop("disabled",false);
+  generateCron(share,index);  
+}
+
+function generateCron(share,index)
+{
+  var frequency = $("#frequency"+share+index).val();
+  var weekday = $("#weekday"+share+index).val();
+  var monthday = $("#monthday"+share+index).val();
+  var month = $("#month"+share+index).val();
+  var hour = $("#hour"+share+index).val();
+  var minute = $("#minute"+share+index).val();
+
+  switch (frequency)
+  {
+    case "never":
+      var cronEntry = "";
+      break;
+    case "daily":
+      var cronEntry = minute + " " + hour + " * * *";
+      break;
+    case "weekly":
+      var cronEntry = minute + " " + hour + " * * " + weekday;
+      break;
+    case "monthly":
+      var cronEntry = minute + " " + hour + " " + monthday + " * *";
+      break;
+    case "yearly":
+      var cronEntry = minute + " " + hour + " " + monthday + " " + month + " *";
+    break;
+  }
+
+  $("#cron"+share+index).html(cronEntry);
+}
+
 
 
 </script>
@@ -487,9 +691,11 @@ function changeView(button)
 <span style='float:right'><input type='button' id='failureLog' value='Failure Log' onclick='logButton("failurelog.txt");' disabled)</input><input type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input><input type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input><input type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
 <center><input type='button' id='GlobalButton' value='Global Settings' onclick='changeView(this.id);' disabled></input>
-<input type='button' id='CreateButton' value='Creation Settings' onclick='changeView(this.id);'></input>
+<input type='button' id='CreateButton' value='Creation / Monitor Settings' onclick='changeView(this.id);'></input>
 <input type='button' id='ManualButton' value='Add Manual Job' onclick='changeView(this.id);'></input>
-
+<input type='button' id='ScheduleButton' value='Share Creation Schedule' onclick='changeView(this.id);'></input>
+<input type='button' id='VerifyButton' value='Share Verification Schedule' onclick='changeView(this.id);'></input>
+<input type='button' id='DiskButton' value='Disk Verification Schedule' onclick='changeView(this.id);'></input>
 
 <span id="settings"></span>
 
