@@ -33,7 +33,7 @@
       {
         $cronTime = $schedule['Custom'];
       } else {
-        $crontTime = $schedule['GeneratedCron'];
+        $cronTime = $schedule['GeneratedCron'];
       }
 
       $cronEntry = $cronTime.' /usr/local/emhttp/plugins/checksum/scripts/verifyDisk.php "'.$schedule['Path'].'" &>/dev/null 2>&1';

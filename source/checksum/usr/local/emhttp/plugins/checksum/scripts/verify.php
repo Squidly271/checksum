@@ -1,5 +1,15 @@
 #!/usr/bin/php
 <?PHP
+$randomFile = mt_rand();
+
+$memoryLimit = file_get_contents("/usr/local/emhttp/plugins/checksum/include/memory_limit");
+$memoryLimit = trim($memoryLimit);
+if ( $memoryLimit )
+{
+  ini_set('memory_limit',-1);
+}
+
+
 $checksumPaths['VerifyLog'] = "/tmp/checksum/verifylog.txt";
 $checksumPaths['usbGlobal']         = "/boot/config/plugins/checksum/settings/global.json";
 $unRaidPaths['Variables']     = "/var/local/emhttp/var.ini";
@@ -23,6 +33,32 @@ if ( is_numeric($testPath) )
 }
 
 $globalSettings = json_decode(file_get_contents($checksumPaths['usbGlobal']),true);
+
+function parseLine($line)
+{
+  $line = trim($line);
+  $parsed = explode("*",$line);
+
+  $file['time'] = $parsed[0];
+  $temp = $parsed[1];
+  $checksum = $parsed[2];
+  $file['file'] = $parsed[3];
+
+  $file[$temp] = $checksum;
+
+  return $file;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -350,20 +386,25 @@ function parseHash($filename)
 
 
 
-logger("Searching For Hash Files in $testPath\n");
+logger("Searching For Hash Files in $testPath.  Depending upon your file structure this may take a few minutes\n");
 
 $hashFilesToCheck = array();
 
 getHashFiles($testPath);
 
-print_r($hashFilesToCheck);
+#print_r($hashFilesToCheck);
 
 
 $filesToCheck = array();
+logger("Parsing Hash Files.  This may take a minute.\n");
 foreach ($hashFilesToCheck as $file)
 {
   $filesToCheck[$file['Hash']][$file['Hash']] = parseHash($file['Hash']);
 }
+
+# $hashFilesToCheck is a huge memory pig and no longer needed anymore.
+$hashFilesToCheck = array();
+
 
 #print_r($filesToCheck);
 
@@ -379,20 +420,44 @@ foreach ($filesToCheck as $hashFile)
     {
       if ( is_file($isFile['file']) )
       {
+        if ($isFile['md5'])
+        {
+          file_put_contents("/tmp/checksum/toVerify".$randomFile,$isFile['time']."*md5*".$isFile['md5']."*".$isFile['file']."\n",FILE_APPEND);
+        }
+        if ($isFile['sha1'])
+        {
+          file_put_contents("/tmp/checksum/toVerify".$randomFile,$isFile['time']."*sha1*".$isFile['sha1']."*".$isFile['file']."\n",FILE_APPEND);
+        }
+        if ($isFile['sha256'])
+        {
+          file_put_contents("/tmp/checksum/toVerify".$randomFile,$isFile['time']."*sha256*".$isFile['sha256']."*".$isFile['file']."\n",FILE_APPEND);
+        }
+        if ($isFile['blake2'])
+        {
+          file_put_contents("/tmp/checksum/toVerify".$randomFile,$isFile['time']."*blake2*".$isFile['blake2']."*".$isFile['file']."\n",FILE_APPEND);
+        }
+
+
+
+
+
+
         $allFilesToCheck[] = $isFile;
       }
     }
   }
 }
 
+
 if ( $diskOnly )
 {
-  logger("Searching for files contained on disk$disk\n");
-  $testFiles = $allFilesToCheck;
-  $allFilesToCheck = array();
+  $handle = fopen("/tmp/checksum/toVerify".$randomFile,"r");
+  logger("Searching for files contained on disk$disk.  This may take a few minutes.\n");
 
-  foreach ($testFiles as $file)
+  while (($line = fgets($handle)) !== false )
   {
+    $file = parseLine($line);
+
     $userFilename = $file['file'];
 
     $diskFilename = str_replace("/mnt/user","/mnt/disk".$disk,$userFilename);
@@ -400,47 +465,90 @@ if ( $diskOnly )
 
     if ( is_file($diskFilename) )
     {
-      $allFilesToCheck[] = $file;
+      file_put_contents("/tmp/checksum/onDisk".$randomFile,$line,FILE_APPEND);
     }
   }
+  fclose($handle);
+  unlink("/tmp/checksum/toVerify".$randomFile);
+  rename("/tmp/checksum/onDisk".$randomFile,"/tmp/checksum/toVerify".$randomFile);
 }
-
 
 $sortKey = 'time';
 $sortDir = 'Up';
 
-usort($allFilesToCheck,"mySort");
+exec("sort -n /tmp/checksum/toVerify$randomFile > /tmp/checksum/sorted$randomFile");
+unlink("/tmp/checksum/toVerify".$randomFile);
+rename("/tmp/checksum/sorted".$randomFile,"/tmp/checksum/toVerify".$randomFile);
+
+#usort($allFilesToCheck,"mySort");
 
 
 $testFiles = array();
 
 if ( $percentage != 100 )
 {
-  $totalFiles = count($allFilesToCheck);
+  $totalFiles = 0;
+  $handle = fopen("/tmp/checksum/toVerify".$randomFile,"r");
+  while(!feof($handle))
+  {
+    $line=fgets($handle);
+    $totalFiles = ++$totalFiles;
+  }
+  fclose($handle);
+
+
+
+
+#  $totalFiles = count($allFilesToCheck);
 
   $startingIndex = intval( $totalFiles * $lastPercentage / 100 -1 );
   $endingIndex = intval($totalFiles * ($lastPercentage + $percentage) /100 -1 );
 
   if ($endingIndex >= $totalFiles)
   {
-    $endingIndex = $totalFiles - 1;
+    $endingIndex = $totalFiles;
   }
 
-  $testFiles = $allFilesToCheck;
-  unset($allFilesToCheck);
+  $handle = fopen("/tmp/checksum/toVerify".$randomFile,"r");
+
+  if ( $startingIndex != 0 );
+  {
+    for ($index = 0; $index < $startingIndex; $index++)
+    {
+      $line = fgets($handle);
+    }
+  }
+
+
   for ( $index = $startingIndex; $index <= $endingIndex; $index++ )
   {
-    $allFilesToCheck[] = $testFiles[$index];
+    $line = fgets($handle);
+    file_put_contents("/tmp/checksum/toVerifyShort".$randomFile,$line,FILE_APPEND);
   }
+  fclose($handle);
+
+  unlink("/tmp/checksum/toVerify".$randomFile);
+  rename("/tmp/checksum/toVerifyShort".$randomFile,"/tmp/checksum/toVerify".$randomFile);
 }
+
+
+
+
+
+
 
 $lastPercentage = $percentage + $lastPercentage;
 
 $failedFiles = array();
 $totalCount = 0;
 
-foreach ($allFilesToCheck as $file)
+
+$handle = fopen("/tmp/checksum/toVerify".$randomFile,"r");
+
+while (( $line = fgets($handle)) != false)
 {
+  $file = parseLine($line);
+
   if ( is_parity_running() )
   {
     logger("Parity check / rebuild running.  Pausing until completed\n");
@@ -527,6 +635,8 @@ foreach ($allFilesToCheck as $file)
   }
 
 }
+fclose($handle);
+@unlink("/tmp/checksum/toVerify".$randomFile);
 
 $loggerLine = "Results for $originalPath: ";
 $loggerLine .= "Total Files: $totalCount ";
