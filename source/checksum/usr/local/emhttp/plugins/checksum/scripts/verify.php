@@ -436,13 +436,6 @@ foreach ($filesToCheck as $hashFile)
         {
           file_put_contents("/tmp/checksum/toVerify".$randomFile,$isFile['time']."*blake2*".$isFile['blake2']."*".$isFile['file']."\n",FILE_APPEND);
         }
-
-
-
-
-
-
-        $allFilesToCheck[] = $isFile;
       }
     }
   }
@@ -465,6 +458,7 @@ if ( $diskOnly )
 
     if ( is_file($diskFilename) )
     {
+      $line = str_replace("/mnt/user","/mnt/disk".$disk,$line);
       file_put_contents("/tmp/checksum/onDisk".$randomFile,$line,FILE_APPEND);
     }
   }
