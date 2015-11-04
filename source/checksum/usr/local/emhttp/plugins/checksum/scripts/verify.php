@@ -19,6 +19,7 @@ $checksumPaths['FailureLog'] = "/tmp/checksum/failurelog.txt";
 $testPath = $argv[1];      # path to what to test
 $percentage = $argv[2];    # percentage of path to check;
 $lastPercentage = $argv[3];  # the last percentage left off at;
+$originalLastPercentage = $lastPercentage;
 
 $originalPath = $testPath;
 
@@ -671,7 +672,13 @@ if ( count($failedFiles)  )
   {
     exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "Checksum Verifier" -s "Hash Verification Failure" -d "One or more files failed verification" -i "warning" -m "'.$loggerLine.'"');
   }
+} else {
+  if ( $globalSettings['Success'] )
+  {
+    exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "ChecksumVerifier" -s "Hash Verification Success" -d "All Files from '.$originalPath.' ( '.$percentage.'% starting at '.$originalLastPercentage.'% ) Passed Verification" -i "normal" -m "'.$loggerLine.'"');
+  }
 }
+
 $loggerLine .= "\n\n";
 
 logger($loggerLine);
@@ -689,3 +696,4 @@ if ( count($failedFiles) )
 
 
 ?>
+ 

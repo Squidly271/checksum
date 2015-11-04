@@ -795,6 +795,7 @@ case 'change_global':
   if ( urldecode(($_POST['parity'])) == "yes" ) { $globalSettings['Parity'] = true; } else { $globalSettings['Parity'] = false; }
   if ( urldecode(($_POST['ignorehour'])) == "yes" ) { $globalSettings['IgnoreHour'] = true; } else { $globalSettings['IgnoreHour'] = false; }
   if ( urldecode(($_POST['notify'])) == "yes" ) { $globalSettings['Notify'] = true; } else { $globalSettings['Notify'] = false; }
+  if ( urldecode(($_POST['success'])) == "yes" ) { $globalSettings['Success'] = true; } else { $globalSettings['Success'] = false; }
   if ( urldecode(($_POST['logsave'])) == "yes" ) { $globalSettings['LogSave'] = true; } else { $globalSettings['LogSave'] = false; }
 
   $globalSettings['NumWatches'] = urldecode(($_POST['numwatches']));
@@ -966,6 +967,17 @@ case 'show_global':
           </tr>
           <tr>
             <td>
+              <b>Notify On Verification Success:</b>
+            </td>
+            <td>
+              <select id='success' onchange='changeGlobal();'>
+                <option value='yes'>Yes</option>
+                <option value='no'>No</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <b>Save Logs To Flash:</b>
             </td>
             <td>
@@ -1023,6 +1035,7 @@ case 'show_global':
   $t .= ($globalSettings['IgnoreHour']) ? "$('#ignoreHour').val('yes');" : "$('#ignoreHour').val('no');";
   $t .= ($globalSettings['Parity']) ? "$('#parity').val('yes');" : "$('#parity').val('no');";
   $t .= ($globalSettings['Notify']) ? "$('#notify').val('yes');" : "$('#notify').val('no');";
+  $t .= ($globalSettings['Success']) ? "($'#success').val('yes');" : "$('#success').val('no');";
 
   $t .= "$('#numqueue').val('$numQueue');";
   $t .= "$('#numwatches').val('$numWatches');";

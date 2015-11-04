@@ -341,9 +341,10 @@ function globalApply()
   var numwatches = $('#numwatches').val();
   var numqueue = $('#numqueue').val();
   var notify = $('#notify').val();
+  var success = $('#success').val();
   var logsave = $('#logsave').val();
 
-  $.post(URL,{action:'change_global',parity:parity,pause:pause,ignorehour:ignorehour,numwatches:numwatches,numqueue:numqueue,notify:notify,logsave:logsave});
+  $.post(URL,{action:'change_global',parity:parity,pause:pause,ignorehour:ignorehour,numwatches:numwatches,numqueue:numqueue,notify:notify,success:success,logsave:logsave});
   $("#globalApply").prop("disabled",true);
 }
 
