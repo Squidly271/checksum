@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.10.31">
-<!ENTITY md5       "ef4a7081e9423d2614689b4068413679">
+<!ENTITY version   "2015.11.04">
+<!ENTITY md5       "89f34cd6a680f1c37319f2b933a3a3ff">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,10 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.11.04###
+- Add in scheduled creation / verification jobs
+- Significanly lower memory usage on verifications
+
 ###2015.10.31###
 - Revised GUI
 - Fix Max Queued Events not being set correctly

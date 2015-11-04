@@ -573,11 +573,13 @@ while (( $line = fgets($handle)) != false)
     {
       $storedChecksum = $file['md5'];
       $calculatedChecksum = md5_file($file['file']);
+      $loggerLine = "md5 ";
     }
     if ( $file['sha1'] )
     {
       $storedChecksum = $file['sha1'];
       $calculatedChecksum = sha1_file($file['file']);
+      $loggerLine = "sha1 ";
     }
     if ( $file['sha256'] )
     {
@@ -585,6 +587,7 @@ while (( $line = fgets($handle)) != false)
       $tempcalculatedChecksum = exec('sha256sum "'.$file['file'].'"');
       $tempcalculatedArray = explode(" ",$tempcalculatedChecksum);
       $calculatedChecksum = $tempcalculatedArray[0];
+      $loggerLine = "sha256 ";
     }
     if ( $file['blake2'] )
     {
@@ -592,15 +595,17 @@ while (( $line = fgets($handle)) != false)
       $tempcalculatedChecksum = exec('/usr/local/emhttp/plugins/checksum/include/b2sum -a blake2s "'.$file['file'].'"');
       $tempcalculatedArray = explode(" ",$tempcalculatedChecksum);
       $calculatedChecksum = $tempcalculatedArray[0];
+      $loggerLine = "blake2 ";
     }
+
 
     if ( $storedChecksum == $calculatedChecksum )
     {
-      $loggerLine = "Passed ".$file['file'];
+      $loggerLine .= "Passed ".$file['file'];
     } else {
       $failFlag = true;
 
-      $loggerLine = "**** Failed ****".$file['file']." ";
+      $loggerLine .= "**** Failed ****".$file['file']." ";
       $loggerLine .= "Failure Cause: ";
 
       if ( filemtime($file['file']) != $file['time'] )
