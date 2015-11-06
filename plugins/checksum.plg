@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.11.04a">
-<!ENTITY md5       "67bd00492e69f967e860e8103c8e7457">
+<!ENTITY version   "2015.11.06">
+<!ENTITY md5       "4c4056398774d2e02ac99842580054e3">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,11 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.11.06###
+- Rewrite of verification routines to avoid bug in PHP
+###NOTE###
+You must go into Global Settings, change a parameter (and then change it back) and hit APPLY for the new verification routines to work correctly
+
 ###2015.11.04###
 - Add in scheduled creation / verification jobs
 - Significanly lower memory usage on verifications

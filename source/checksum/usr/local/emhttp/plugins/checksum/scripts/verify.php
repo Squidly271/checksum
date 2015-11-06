@@ -19,12 +19,7 @@
 
 $randomFile = mt_rand();
 
-$memoryLimit = file_get_contents("/usr/local/emhttp/plugins/checksum/include/memory_limit");
-$memoryLimit = trim($memoryLimit);
-if ( $memoryLimit )
-{
-  ini_set('memory_limit',-1);
-}
+ini_set('memory_limit',-1);
 
 
 $checksumPaths['VerifyLog'] = "/tmp/checksum/verifylog.txt";

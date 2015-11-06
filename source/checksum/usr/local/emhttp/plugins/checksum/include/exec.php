@@ -286,6 +286,7 @@ function createShare($i,$settings = false)
   {
   $t .= "<font color='red'> </font>";
   }
+
   return $t;
 }
 
