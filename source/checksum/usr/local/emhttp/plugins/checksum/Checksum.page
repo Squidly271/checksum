@@ -689,7 +689,10 @@ function generateCron(share,index)
 
 </script>
 <input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font>
-<span style='float:right'><input type='button' id='failureLog' value='Failure Log' onclick='logButton("failurelog.txt");' disabled)</input><input type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input><input type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input><input type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
+<span style='float:right'><input type='button' id='failureLog' value='Failure Log' onclick='logButton("failurelog.txt");' disabled)</input>
+<input id='checksumLog' type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input>
+<input id='verifyLog' type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input>
+<input id='commandLog' type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
 <center><input type='button' id='GlobalButton' value='Global Settings' onclick='changeView(this.id);' disabled></input>
 <input type='button' id='CreateButton' value='Creation / Monitor Settings' onclick='changeView(this.id);'></input>

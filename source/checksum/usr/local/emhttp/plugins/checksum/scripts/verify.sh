@@ -8,7 +8,7 @@ failAnalysisUpdated="/tmp/checksum/failUpdated$1"
 verifyLogger()
 {
   loggerLine=`date +"%b%e %Y %R:%S"`
-  loggerLine="$loggerLine $1"
+  loggerLine="$loggerLine *$instance* $1"
 
   logSize=`stat --printf="%s" /tmp/checksum/verifylog.txt`
   echo $logSize

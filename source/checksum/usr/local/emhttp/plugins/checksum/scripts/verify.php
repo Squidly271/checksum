@@ -113,10 +113,10 @@ function failLog($string)
 
 function logger($string, $newLine = true)
 {
-  global  $checksumPaths, $globalSettings;
+  global  $checksumPaths, $globalSettings, $randomFile;
   if ( $newLine )
   {
-    $string = date("M j Y H:i:s  ").$string;
+    $string = date("M j Y H:i:s  ")."*$randomFile* ".$string;
   }
 
   if ( @filesize($checksumPaths['VerifyLog']) > 500000 )

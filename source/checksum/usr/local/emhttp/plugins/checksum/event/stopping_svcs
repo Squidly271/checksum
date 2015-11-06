@@ -5,6 +5,7 @@ pkill -15 -f checksum_inotifywait
 pkill -15 -f checksum.php
 pkill -15 -f checksumInotify.sh
 pkill -15 -f verify.php
+pkill -15 -f verify.sh
 pkill -15 -f verifyShare.php
 pkill -15 -f verifyDisk.php
 pkill -15 -f checksumShare.php

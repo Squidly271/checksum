@@ -22,6 +22,10 @@ $checksumPaths['FailureLog']        = "/tmp/checksum/failurelog.txt";
 $checksumPaths['Global']            = "/var/local/emhttp/plugins/$plugin/global.json";
 $checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/settings/global.json";
 $checksumPaths['Schedule']          = "/boot/config/plugins/$plugin/settings/schedule.json";
+$checksumPaths['VerifyLog']         = "/tmp/checksum/verifylog.txt";
+$checksumPaths['ChecksumLog']       = "/tmp/checksum/checksumLog.txt";
+
+
 
 $unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
 
@@ -754,6 +758,28 @@ case 'status':
     $t .= "<script>$('#failureLog').prop('disabled',false);</script>";
   } else {
     $t .= "<script>$('#failureLog').prop('disabled',true);</script>";
+  }
+
+
+  if ( is_file($checksumPaths['ChecksumLog']) )
+  {
+    $t .= "<script>$('#checksumLog').prop('disabled',false);</script>";
+  } else {
+    $t .= "<script>$('#checksumLog').prop('disabled',true);</script>";
+  }
+
+  if ( is_file($checksumPaths['VerifyLog']) )
+  {
+    $t .= "<script>$('#verifyLog').prop('disabled',false);</script>";
+  } else {
+    $t .= "<script>$('#verifyLog').prop('disabled',true);</script>";
+  }
+
+  if ( is_file($checksumPaths['Log']) )
+  {
+    $t .= "<script>$('#commandLog').prop('disabled',false);</script>";
+  } else {
+    $t .= "<script>$('#commandLog').prop('disabled',true);</script>";
   }
 
   echo $t;
