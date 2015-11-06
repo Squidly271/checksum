@@ -1,6 +1,12 @@
 #!/usr/bin/php
 <?PHP
 
+#####################################################
+#                                                   #
+# Routine that adds any scheduled jobs into crontab #
+#                                                   #
+#####################################################
+
   exec("crontab -l",$cron);
 
   $allSchedule = json_decode(file_get_contents("/boot/config/plugins/checksum/settings/schedule.json"),true);

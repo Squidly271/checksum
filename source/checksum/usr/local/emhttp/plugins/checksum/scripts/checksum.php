@@ -6,6 +6,10 @@
 ##  Checksum.  Copyright 2015, Andrew Zawadzki ##
 ##                                             ##
 #################################################
+##                                             ##
+## The Main script to generate .hash files     ##
+##                                             ##
+#################################################
 
 
 $plugin="checksum";
@@ -32,7 +36,11 @@ $scriptPaths['b2sum']         = "/usr/local/emhttp/plugins/$plugin/include/b2sum
 $scriptPaths['MonitorWatch']  = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify1.sh";
 $scriptPaths['inotifywait']   = "/usr/bin/inotifywait";
 
-# get the settings
+################################
+#                              #
+# All the initialization stuff #
+#                              #
+################################
 
 proc_nice(10);
 
@@ -68,9 +76,7 @@ if ( file_exists($checksumPaths['usbGlobal']) )
 $pauseTime = intval($globalSettings['Pause']);
 
 $commandArguments = explode("***",$argv[1]);
-#print_r($commandArguments);
 $commandPath = $commandArguments[2];
-#echo $commandPath;
 $commandPath = rtrim($commandPath,"/");
 $commandTime = $commandArguments[1];
 
@@ -103,6 +109,11 @@ if ( ! $recursiveFlag )
 
 #print_r($AllSettings);
 
+#########################################################################################
+#                                                                                       #
+# Routine to see if mover is running.  Doesn't quite work properly.  Not currently used #
+#                                                                                       #
+#########################################################################################
 
 function is_mover_running()
 {
@@ -116,6 +127,12 @@ function is_mover_running()
 
   return $status;
 }
+
+################################################################################################
+#                                                                                              #
+# Routine to check if a parity check / rebuild is in progress.  Returns True if parity running #
+#                                                                                              #
+################################################################################################
 
 function is_parity_running()
 {
@@ -135,6 +152,12 @@ function is_parity_running()
 
   return ( intval($vars['mdResyncPos']) );
 }
+
+###############################################################################################
+#                                                                                             #
+# Routines to write to the logs.  If second parameter is true, doesn't output the date / time #
+#                                                                                             #
+###############################################################################################
 
 function logger($string, $newLine = true)
 {
@@ -195,6 +218,12 @@ function Mainlogger($string, $newLine = true)
   file_put_contents($checksumPaths['Log'],$string,FILE_APPEND);
 }
 
+###################################################
+#                                                 #
+# Checks if a file is open.  Returns true if open #
+#                                                 #
+###################################################
+
 function is_open($fullPath)
 {
   $directory = pathinfo($fullPath,PATHINFO_DIRNAME);
@@ -207,13 +236,11 @@ function is_open($fullPath)
 }
 
 
-function string_ends_with($string, $ending)
-{
-    $len = strlen($ending);
-    $string_end = substr($string, strlen($string) - $len);
-
-    return $string_end == $ending;
-}
+########################################################################
+#                                                                      #
+# Checks if the filename matches an array of wildcards.  True if match #
+#                                                                      #
+########################################################################
 
 function fileMatch($filename,$matchArray)
 {
@@ -226,6 +253,13 @@ function fileMatch($filename,$matchArray)
   }
   return false;
 }
+
+#################################################################################################
+#                                                                                               #
+# Called whenever writing a .hash file.  Checks to see if the extension being written is valid. #
+# If not valid extension (ie: data may be about to get overwritten, stops all execution.        #
+#                                                                                               #
+#################################################################################################
 
 function paranoiaCheck($filename)
 {
@@ -482,9 +516,6 @@ function parseMD5($filename)
      if ( strpos($md5Contents[$i],"#blake2") === 0 )  { $md5Array[$md5Entry]['blake2'] = $md5Calculated; }
 
 
-
-#     $md5Array[$md5Entry][$algorithm] = $md5Calculated;
-
      $i = ++$i;
      continue;
    }
@@ -702,11 +733,11 @@ function getFiles($path, $recursive = false)
   generateMD5($files_to_create);
 }
 
-################################################################################
-#                                                                              #
-# Function to convert linux date stamp to string format used by corz' checksum #
-#                                                                              #
-################################################################################
+######################################################################################
+#                                                                                    #
+# Function to convert linux date stamp to weird string format used by corz' checksum #
+#                                                                                    #
+######################################################################################
 
 function timeToCorz($time)
 {
@@ -727,6 +758,12 @@ function corzToTime($corzTime)
 
   return strtotime($date." ".$time);
 }
+
+############################################
+#                                          #
+# Converts Seconds to Time (Array{d,h,m,s} #
+#                                          #
+############################################
 
 function secondsToTime($inputSeconds) {
 
@@ -759,6 +796,12 @@ function secondsToTime($inputSeconds) {
     );
     return $obj;
 }
+
+#################################################
+#                                               #
+# Converts Seconds to a string a human can read #
+#                                               #
+#################################################
 
 function readableTime($seconds)
 {
@@ -810,6 +853,12 @@ function readableTime($seconds)
 
 }
 
+###################################################
+#                                                 #
+# Converts a file size to a human readable string #
+#                                                 #
+###################################################
+
 function human_filesize($bytes, $decimals = 2) {
   $size = array(' B',' kB',' MB',' GB',' TB',' PB',' EB',' ZB',' YB');
   $factor = floor((strlen($bytes) - 1) / 3);
@@ -854,6 +903,6 @@ foreach ($AllSettings as $Settings)
 }
 Mainlogger("Job Finished.  Total Time: $readableTime  Total Size: ".human_filesize($totalBytes)."  Average Speed: $totalDisplayed/s\n");
 
-unlink($checksumPaths['Running']);
-unlink($checksumPaths['Scanning']);
+@unlink($checksumPaths['Running']);
+@unlink($checksumPaths['Scanning']);
 ?>

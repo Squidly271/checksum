@@ -807,6 +807,20 @@ case 'change_global':
   file_put_contents("/boot/config/plugins/checksum/settings/numwatches",$globalSettings['NumWatches']."\n");
   file_put_contents($checksumPaths['Global'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
   file_put_contents($checksumPaths['usbGlobal'],json_encode($globalSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+  if ( $globalSettings['Parity'] )
+  {
+    file_put_contents("/boot/config/plugins/checksum/settings/PauseDuringParity","Pause During Parity Check");
+  } else {
+    @unlink("/boot/config/plugins/checksum/settings/PauseDuringParity");
+  }
+  if ( $globalSettings['LogSave'] )
+  {
+    file_put_contents("/boot/config/plugins/checksum/settings/savelogs","save logs");
+  } else {
+    @unlink("/boot/config/plugins/checksum/settings/savelogs");
+  }
+
   break;
 
 case 'verify_now':

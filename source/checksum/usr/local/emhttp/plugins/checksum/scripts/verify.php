@@ -1,5 +1,22 @@
 #!/usr/bin/php
 <?PHP
+
+################################################
+#                                              #
+# Main verification routine.                   #
+# Parameters: 1 - share or if is a number disk #
+#             2 - percent to verify            #
+#             3 - starting position            #
+#                                              #
+################################################
+
+
+########################
+#                      #
+# Initialization Stuff #
+#                      #
+########################
+
 $randomFile = mt_rand();
 
 $memoryLimit = file_get_contents("/usr/local/emhttp/plugins/checksum/include/memory_limit");
@@ -35,6 +52,14 @@ if ( is_numeric($testPath) )
 
 $globalSettings = json_decode(file_get_contents($checksumPaths['usbGlobal']),true);
 
+##############################################################################
+#                                                                            #
+# Parses the line created in the toVerify file                               #
+# Note: by using files instead of an array, a HUGE amount of memory is saved #
+#                                                                            #
+##############################################################################
+
+
 function parseLine($line)
 {
   $line = trim($line);
@@ -50,37 +75,11 @@ function parseLine($line)
   return $file;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-function mySort($a, $b) {
-  global $sortKey;
-  global $sortDir;
-
-  $c = strtolower($a[$sortKey]);
-  $d = strtolower($b[$sortKey]);
-
-  $return1 = ($sortDir == "Down") ? -1 : 1;
-  $return2 = ($sortDir == "Down") ? 1 : -1;
-
-  if ($c > $d) { return $return1; }
-  else if ($c < $d) { return $return2; }
-  else { return 0; }
-}
-
-
-
-
+###############################
+#                             #
+# Checks if parity is running #
+#                             #
+###############################
 
 function is_parity_running()
 {
@@ -96,6 +95,12 @@ function is_parity_running()
 
   return ( $vars['mdResync'] != "0" );
 }
+
+##########################################
+#                                        #
+# Various functions to write to the logs #
+#                                        #
+##########################################
 
 function failLog($string)
 {
@@ -136,7 +141,11 @@ function logger($string, $newLine = true)
   file_put_contents($checksumPaths['VerifyLog'],$string,FILE_APPEND);
 }
 
-
+#######################################
+#                                     #
+# Converts corz timestamps to seconds #
+#                                     #
+#######################################
 
 function corzToTime($corzTime)
 {
@@ -147,6 +156,12 @@ function corzToTime($corzTime)
   return strtotime($date." ".$time); global $hashFilesToCheck;
 }
 
+
+###########################################
+#                                         #
+# Converts seconds to an array of d,h,m,s #
+#                                         #
+###########################################
 
 function secondsToTime($inputSeconds) {
 
@@ -168,7 +183,6 @@ function secondsToTime($inputSeconds) {
     // extract the remaining seconds
     $remainingSeconds = $minuteSeconds % $secondsInAMinute;
     $seconds = ceil($remainingSeconds);
-#    $seconds = $remainingSeconds;
 
     // return the final array
     $obj = array(
@@ -180,7 +194,11 @@ function secondsToTime($inputSeconds) {
     return $obj;
 }
 
-
+###########################################
+#                                         #
+# Returns a string of human readable time #
+#                                         #
+###########################################
 
 function readableTime($seconds)
 {
@@ -232,20 +250,22 @@ function readableTime($seconds)
 
 }
 
-
-
-
-
+######################################################
+#                                                    #
+# Converts bytes to something a human can understand #
+#                                                    #
+######################################################
 function human_filesize($bytes, $decimals = 2) {
   $size = array(' B',' kB',' MB',' GB',' TB',' PB',' EB',' ZB',' YB');
   $factor = floor((strlen($bytes) - 1) / 3);
   return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
 }
 
-
-
-
-
+#################################################
+#                                               #
+# Recursive function to find all the hash files #
+#                                               #
+#################################################
 
 function getHashFiles($path)
 {
@@ -289,6 +309,12 @@ function getHashFiles($path)
     }
   }
 }
+
+####################################
+#                                  #
+# Function to parse the hash files #
+#                                  #
+####################################
 
 function parseHash($filename)
 {
@@ -337,9 +363,6 @@ function parseHash($filename)
 
      $md5Array[$md5Entry]['file'] = $md5Entry;
 
-
-#     $md5Array[$md5Entry][$algorithm] = $md5Calculated;
-
      $i = ++$i;
      continue;
    }
@@ -361,25 +384,15 @@ function parseHash($filename)
    if ( $md5File[0] == "*" ) {
      $md5File = ltrim($md5File,"*");
    }
-#   $md5Entry = $filePath."/".$md5File;
    $md5Entry = $filePath.$md5File;
 
    $md5Array[$md5Entry]['time'] = @filemtime($md5Entry);
    $md5Array[$md5Entry][$algorithm] = $md5Calculated;
    $md5Array[$md5Entry]['file'] = $md5Entry;
   }
-#  print_r($md5Array);
 
   return $md5Array;
 }
-
-
-
-
-
-
-
-
 
 
 ##########################################################################################################################
@@ -397,7 +410,7 @@ getHashFiles($testPath);
 
 
 $filesToCheck = array();
-logger("Parsing Hash Files.  This may take a minute.\n");
+logger("Parsing Hash Files.  This may take take a few minutes.\n");
 foreach ($hashFilesToCheck as $file)
 {
   $filesToCheck[$file['Hash']][$file['Hash']] = parseHash($file['Hash']);
@@ -468,14 +481,9 @@ if ( $diskOnly )
   rename("/tmp/checksum/onDisk".$randomFile,"/tmp/checksum/toVerify".$randomFile);
 }
 
-$sortKey = 'time';
-$sortDir = 'Up';
-
 exec("sort -n /tmp/checksum/toVerify$randomFile > /tmp/checksum/sorted$randomFile");
 unlink("/tmp/checksum/toVerify".$randomFile);
 rename("/tmp/checksum/sorted".$randomFile,"/tmp/checksum/toVerify".$randomFile);
-
-#usort($allFilesToCheck,"mySort");
 
 
 $testFiles = array();
@@ -490,11 +498,6 @@ if ( $percentage != 100 )
     $totalFiles = ++$totalFiles;
   }
   fclose($handle);
-
-
-
-
-#  $totalFiles = count($allFilesToCheck);
 
   $startingIndex = intval( $totalFiles * $lastPercentage / 100 -1 );
   $endingIndex = intval($totalFiles * ($lastPercentage + $percentage) /100 -1 );
@@ -526,17 +529,10 @@ if ( $percentage != 100 )
   rename("/tmp/checksum/toVerifyShort".$randomFile,"/tmp/checksum/toVerify".$randomFile);
 }
 
-
-
-
-
-
-
 $lastPercentage = $percentage + $lastPercentage;
 
 $failedFiles = array();
 $totalCount = 0;
-
 
 $handle = fopen("/tmp/checksum/toVerify".$randomFile,"r");
 
@@ -544,156 +540,50 @@ while (( $line = fgets($handle)) != false)
 {
   $file = parseLine($line);
 
-  if ( is_parity_running() )
-  {
-    logger("Parity check / rebuild running.  Pausing until completed\n");
-    file_put_contents($checksumPaths['VerifyParity'],"parity running");
-    while ( true )
-    {
-      if ( is_parity_running() )
-      {
-        sleep(600);
-        continue;
-      } else {
-        logger("Parity check / rebuild finished.  Resuming\n");
-        @unlink($checksumPaths['VerifyParity']);
-        break;
-      }
-    }
-  }
 
-  if ( is_file($file['file']) )
-  {
-    $failFlag = false;
+  if ( $file['md5'] ) $testAlgorithm = "md5";
+  if ( $file['sha1'] ) $testAlgorithm = "sha1";
+  if ( $file['sha256'] ) $testAlgorithm = "sha256";
+  if ( $file['blake2'] ) $testAlgorithm = "blake2";
 
-    $fileSize = filesize($file['file']);
-    $loggerLine = $file['file'];
-    $startTime = microtime(true);
-
-    if ( $file['md5'] )
-    {
-      $storedChecksum = $file['md5'];
-      $calculatedChecksum = md5_file($file['file']);
-      $loggerLine = "md5 ";
-    }
-    if ( $file['sha1'] )
-    {
-      $storedChecksum = $file['sha1'];
-      $calculatedChecksum = sha1_file($file['file']);
-      $loggerLine = "sha1 ";
-    }
-    if ( $file['sha256'] )
-    {
-      $storedChecksum = $file['sha256'];
-      $tempcalculatedChecksum = exec('sha256sum "'.$file['file'].'"');
-      $tempcalculatedArray = explode(" ",$tempcalculatedChecksum);
-      $calculatedChecksum = $tempcalculatedArray[0];
-      $loggerLine = "sha256 ";
-    }
-    if ( $file['blake2'] )
-    {
-      $storedChecksum = $file['blake2'];
-      $tempcalculatedChecksum = exec('/usr/local/emhttp/plugins/checksum/include/b2sum -a blake2s "'.$file['file'].'"');
-      $tempcalculatedArray = explode(" ",$tempcalculatedChecksum);
-      $calculatedChecksum = $tempcalculatedArray[0];
-      $loggerLine = "blake2 ";
-    }
-
-
-    if ( $storedChecksum == $calculatedChecksum )
-    {
-      $loggerLine .= "Passed ".$file['file'];
-    } else {
-      $failFlag = true;
-
-      $loggerLine .= "**** Failed ****".$file['file']." ";
-      $loggerLine .= "Failure Cause: ";
-
-      if ( filemtime($file['file']) != $file['time'] )
-      {
-        $loggerLine .= "File Updated.";
-        $failed['file'] = $file['file'];
-        $failed['corrupt'] = false;
-      } else {
-        $loggerLine .= "File Corrupt.";
-        $failed['file'] = $file['file'];
-        $failed['corrupt'] = true;
-      }
-      $failedFiles[] = $failed;
-    }
-    $totalTime = microtime(true) - $startTime;
-    $averageSpeed = intval($fileSize / $totalTime);
-
-    $loggerLine .= "   ".human_filesize($fileSize)."   ".human_filesize($averageSpeed)."/s\n";
-    logger($loggerLine);
-    if ( $failFlag )
-    {
-      failLog($loggerLine);
-    }
-
-    $totalCount = $totalCount + 1;
-  }
+  file_put_contents("/tmp/checksum/toVerifysh$randomFile",$testAlgorithm."\n".$file[$testAlgorithm]."\n".$file['time']."\n".$file['file']."\n",FILE_APPEND);
 
 }
 fclose($handle);
-@unlink("/tmp/checksum/toVerify".$randomFile);
 
-$loggerLine = "Results for $originalPath: ";
-$loggerLine .= "Total Files: $totalCount ";
-$totalPass = $totalCount - count($failedFiles);
-$loggerLine .= "Total Passed: ".$totalPass." ";
+exec("/usr/local/emhttp/plugins/checksum/scripts/verify.sh $randomFile",$dummyOutput,$returnValue);
 
-if ( count($failedFiles)  )
+
+if ( $returnValue )
 {
-  $loggerLine .= "Total Failed: ".count($failedFiles);
-  $loggerLine .= "\n\nFailure Analysis\n\n";
+  $failLine = "";
 
-  foreach ( $failedFiles as $failed )
+  if ( file_exists("/tmp/checksum/failCorrupt$randomFile") )
   {
-    if ( $failed['corrupt'] )
-    {
-      $loggerLine .= "CORRUPTED ".$failed['file']."\n";
-    } else {
-      $loggerLine .= "UPDATED ".$failed['file']."\n";
-    }
+    $failLine .= "Corrupted Files:\n\n";
+    $failLine .= file_get_contents("/tmp/checksum/failCorrupt$randomFile");
   }
-
-  if ( ! is_dir("/boot/config/plugins/checksum/logs/failure") )
+  if ( file_exists("/tmp/checksum/failUpdated$randomFile") )
   {
-    mkdir("/boot/config/plugins/checksum/logs/failure",0777,true);
+    $failLine .= "Updated Files:\n\n";
+    $failLine .= file_get_contents("/tmp/checksum/failUpdated$randomFile");
   }
-
-  $failureText = str_replace("\n","\r\n",$loggerLine);
-  $failureFile = "/boot/config/plugins/checksum/logs/failure/Failed-".date("Y-m-d h-i-s").".txt";
-  file_put_contents($failureFile,$failureText);
-
 
   if ( $globalSettings['Notify'] )
   {
-    exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "Checksum Verifier" -s "Hash Verification Failure" -d "One or more files failed verification" -i "warning" -m "'.$loggerLine.'"');
+    exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "Checksum Verifier" -s "Hash Verification Failure" -d "One or more files failed verification" -i "warning" -m "'.$failLine.'"');
   }
 } else {
   if ( $globalSettings['Success'] )
   {
     exec('/usr/local/emhttp/plugins/dynamix/scripts/notify -e "ChecksumVerifier" -s "Hash Verification Success" -d "All Files from '.$originalPath.' ( '.$percentage.'% starting at '.$originalLastPercentage.'% ) Passed Verification" -i "normal" -m "'.$loggerLine.'"');
   }
+
+  @unlink("/tmp/checksum/failCorrupt$randomFile");
+  @unlink("/tmp/checksum/failUpdated$randomFile");
+  @unlink("/tmp/checksum/toVerify$randomFile");
 }
 
-$loggerLine .= "\n\n";
-
-logger($loggerLine);
-
-if ( count($failedFiles) )
-{
-  exit(1);
-} else {
-  exit(0);
-}
-
-
-
-
-
+exit($returnValue);
 
 ?>
- 

@@ -1,5 +1,13 @@
 #!/bin/bash
 
+####################################################
+#                                                  #
+# Script that sets up the inotify watches and pipe #
+#                                                  #
+####################################################
+
+
+
 pipe=/tmp/checksumPipe
 
 if [[ -e /boot/config/plugins/checksum/settings/numwatches ]]

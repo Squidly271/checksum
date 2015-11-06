@@ -1,6 +1,14 @@
 #!/usr/bin/php
 <?PHP
 
+##################################################################
+#                                                                #
+# Routine that clears crontab of any entries this plugin creates #
+#                                                                #
+##################################################################
+
+
+
   exec("crontab -l",$cron);
 
   $numLines = sizeof($cron);

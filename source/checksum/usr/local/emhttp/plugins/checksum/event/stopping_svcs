@@ -46,6 +46,8 @@ rm /tmp/checksum/toVerify* > /dev/null 2>&1
 rm /tmp/checksum/onDisk* > /dev/null 2>&1
 rm /tmp/checksum/sorted* > /dev/null 2>&1
 rm /tmp/checksum/toVerifyShort* > /dev/null 2>&1
+rm /tmp/checksum/total* > /dev/null 2>&1
+
 
 /usr/local/emhttp/plugins/checksum/scripts/checksumRemoveCron.php
 
