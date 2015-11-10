@@ -688,7 +688,6 @@ function generateCron(share,index)
 <input type='button' id='ScheduleButton' value='Share Creation Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='VerifyButton' value='Share Verification Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='DiskButton' value='Disk Verification Schedule' onclick='changeView(this.id);'></input>
-<input type='button' id='ParButton' value='Par2' onclick='changeView(this.id);'></input>
 
 <span id="settings"></span>
 
