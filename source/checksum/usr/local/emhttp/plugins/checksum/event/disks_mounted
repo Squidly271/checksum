@@ -3,6 +3,12 @@
 mkdir /tmp/checksum
 cp "/usr/local/emhttp/plugins/checksum/scripts/checksum_is_open.sh" "/etc/cron.hourly/checksum_is_open.sh" >/dev/null 2>&1
 
+if [[ ! -p "/tmp/checksum/par2pipe" ]]
+then
+  mkfifo "/tmp/checksum/par2pipe"
+fi
+
+echo "/usr/local/emhttp/plugins/checksum/scripts/par2monitor.sh > /dev/null 2>&1" | at -M NOW >/dev/null 2>&1
 
 echo "/usr/local/emhttp/plugins/checksum/scripts/start_monitor.sh > /dev/null 2>&1" | at -M NOW  >/dev/null 2>&1
 

@@ -1,3 +1,3 @@
-###Checksum###
+###Checksum Suite###
 
-A utility to automatically create and update MD5 / SHA / BLAKE2 checksum files
+A set of tools to automatically create and verify MD5 / SHA1 / SHA256 / BLAKE2S checksums and additionally create and verify / repair PAR2 folders

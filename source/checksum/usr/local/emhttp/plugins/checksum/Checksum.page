@@ -1,5 +1,5 @@
-Menu="Utilities"
-Title="Checksum Creator"
+Menu="ChecksumSuite"
+Title="Checksum Tools"
 Icon="checksum.png"
 ---
 <?
@@ -513,7 +513,7 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",true);
       $("#DiskButton").prop("disabled",false);
- 
+
       $.post(URL,{action:'show_verify_schedule',tag:'Verify'},function(data)
       {
         if (data)
@@ -538,18 +538,6 @@ function changeView(button)
         }
       });
       break;
-
-
-
-
-
-
-
-
-
-
-
-
 
   }
 }
@@ -700,6 +688,7 @@ function generateCron(share,index)
 <input type='button' id='ScheduleButton' value='Share Creation Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='VerifyButton' value='Share Verification Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='DiskButton' value='Disk Verification Schedule' onclick='changeView(this.id);'></input>
+<input type='button' id='ParButton' value='Par2' onclick='changeView(this.id);'></input>
 
 <span id="settings"></span>
 

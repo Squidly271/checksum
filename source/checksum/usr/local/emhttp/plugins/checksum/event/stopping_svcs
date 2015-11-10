@@ -9,10 +9,10 @@ pkill -15 -f verify.sh
 pkill -15 -f verifyShare.php
 pkill -15 -f verifyDisk.php
 pkill -15 -f checksumShare.php
-
 pkill -15 -f verify*.php
-
-
+pkill -15 -f par2monitor.sh
+pkill -15 -f par2create.php
+pkill -15 -f checksumPar2
 
 logTime=$(date +"%Y-%m-%d %H-%M-%S")
 
@@ -42,6 +42,7 @@ rm /tmp/checksum/running > /dev/null 2>&1
 rm /tmp/checksum/waiting > /dev/null 2>&1
 rm /tmp/checksum/paused > /dev/null 2>&1
 rm /tmp/checksumPipe > /dev/null 2>&1
+rm /tmp/checksum/par2pipe > /dev/null 2>&1
 rm /tmp/checksum/paranoia > /dev/null 2>&1
 rm /tmp/checksum/toVerify* > /dev/null 2>&1
 rm /tmp/checksum/onDisk* > /dev/null 2>&1
