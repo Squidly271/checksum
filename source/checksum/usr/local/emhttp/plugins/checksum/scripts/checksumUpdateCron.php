@@ -9,7 +9,12 @@
 
   exec("crontab -l",$cron);
 
-  $allSchedule = json_decode(file_get_contents("/boot/config/plugins/checksum/settings/schedule.json"),true);
+  if ( file_exists("/boot/config/plugins/checksum/settings/schedule.json") )
+  {
+    $allSchedule = json_decode(file_get_contents("/boot/config/plugins/checksum/settings/schedule.json"),true);
+  } else {
+    return;
+  }
 
   if ( is_array($allSchedule['Verify']) )
   {

@@ -1,0 +1,189 @@
+Menu="ChecksumSuite"
+Title="Global Settings"
+Icon="checksum.png"
+---
+<?
+
+#################################################
+##                                             ##
+##  Checksum.  Copyright 2015, Andrew Zawadzki ##
+##                                             ##
+#################################################
+
+
+$plugin = "checksum";
+$checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings.json";
+$checksumPaths['tmpSettings']       = "/tmp/checksum/temp.json";
+$checksumPaths['Settings']          = "/var/local/emhttp/plugins/$plugin/settings.json";
+$checksumPaths['Waiting']           = "/tmp/checksum/waiting";
+$checksumPaths['Parity']            = "/tmp/checksum/parity";
+$checksumPaths['Running']           = "/tmp/checksum/running";
+$checksumPaths['Log']               = "/tmp/checksum/log.txt";
+
+$unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
+
+$scriptPaths['CreateWatch']         = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify.sh";
+$scriptPaths['b2sum']               = "/usr/local/emhttp/plugins/$plugin/include/b2sum";
+$scriptPaths['MonitorWatch']        = "/usr/local/emhttp/plugins/$plugin/scripts/checksumInotify1.sh";
+$scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
+$scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
+
+$unRaidVariables = parse_ini_file("/var/local/emhttp/var.ini");
+$unRaidStarted = $unRaidVariables['mdState'] == "STARTED" ? "true" : "false";
+
+
+?>
+<script>
+var URL = "/plugins/<?=$plugin?>/include/exec.php";
+
+$(function(){
+
+if ( <?=$unRaidStarted?> == false )
+{
+    swal({
+      title: "unRaid array not started",
+      text: "The array must be started to make changes to this plugin",
+      html: true,
+      showConfirmButton: true,
+      type: "error"
+    });
+    return;
+
+}
+
+
+$.post(URL,{action:'inotifywait'},function(data) {
+  if (data)
+ {
+    $("#restart").prop("disabled",true);
+    swal({
+      title: "inotify tools not installed!",
+      text: "This plugin requires the nerd pack plugin to be installed.\nSee here:\n<a href='https://lime-technology.com/forum/index.php?topic=37541.0' target='_blank'>Nerd Pack Plugin</a>",
+      html: true,
+      type: "error"
+    });
+  }
+});
+
+
+setInterval(function() { statusDisplay(); },1500);
+statusDisplay();
+
+$.post(URL,{action:'show_global'},function(data) {
+  if (data) {
+    $("#settings").html(data);
+  }
+});
+
+
+});
+
+
+function statusDisplay()
+{
+  $.post(URL,{action:'status'},function(data) {
+    if (data) {
+      $("#status").html(data);
+    }
+  });
+}
+
+
+function restartMonitor()
+{
+  swal({
+    imageUrl: "/plugins/checksum/images/spinner2.gif",
+    imageSize: "20x20",
+    title: "Starting Background Process",
+    text: "This will take about 15 seconds",
+    showConfirmButton: false
+  });
+
+  $.post(URL,{action:'start_monitor'},function(data)
+  {
+    if (data)
+    {
+      $("#restart").prop("disabled",false);
+      $("#restartNeeded").html(" ");
+  swal({
+    title: "",
+    text: "You need to wait until the log shows <em><b>Watches Established</b></em> prior to queueing any jobs.<br><br>Depending upon your file structure, that may take a minute or so",
+    html: true,
+    type: "warning",
+    showConfirmButton: true
+  });
+
+    }
+  });
+}
+
+function stopMonitor()
+{
+  swal({
+    imageUrl: "/plugins/checksum/images/spinner2.gif",
+    imageSize: "20x20",
+    title: "Stopping Background Process",
+    text: "This will take about 15 seconds",
+    showConfirmButton: false
+  });
+
+  $.post(URL,{action:'stop_monitor'},function(data)
+  {
+    if (data)
+    {
+  swal({
+    title: "",
+    text: "Any scans queued up have probably been lost",
+    html: true,
+    type: "warning",
+    showConfirmButton: true
+  });
+
+    }
+  });
+}
+
+function changeGlobal()
+{
+  $("#globalApply").prop("disabled",false);
+}
+
+function globalApply()
+{
+  var parity = $("#parity").val();
+  var pause = $("#pause").val();
+  var ignorehour = $("#ignoreHour").val();
+  var numwatches = $('#numwatches').val();
+  var numqueue = $('#numqueue').val();
+  var notify = $('#notify').val();
+  var success = $('#success').val();
+  var logsave = $('#logsave').val();
+  var includehash = $('#includehash').val();
+
+  $.post(URL,{action:'change_global',parity:parity,pause:pause,ignorehour:ignorehour,numwatches:numwatches,numqueue:numqueue,notify:notify,success:success,logsave:logsave,includehash:includehash});
+
+  $("#globalApply").prop("disabled",true);
+}
+
+function logButton(whichLog)
+{
+  openWindow('/plugins/checksum/scripts/showlog.sh&arg1='+whichLog,'Checksum Log',900,1500);
+}
+
+function validateWatches()
+{
+  $('#globalApply').prop('disabled',false);
+  $("#restartNeeded").html("<font color='red'>Restart of monitor required for changes to take effect </font>");
+}
+
+</script>
+<input type='button' value='Stop Service' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Service' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font>
+<span style='float:right'><input type='button' id='failureLog' value='Failure Log' onclick='logButton("failurelog.txt");' disabled)</input>
+<input id='checksumLog' type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input>
+<input id='verifyLog' type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input>
+<input id='commandLog' type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
+
+<span id="settings"></span>
+
+<span id="FuckUps"></span>
+<span id="debug"></span>
