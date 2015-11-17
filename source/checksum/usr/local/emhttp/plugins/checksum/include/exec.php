@@ -24,7 +24,7 @@ $checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/settings/glo
 $checksumPaths['Schedule']          = "/boot/config/plugins/$plugin/settings/schedule.json";
 $checksumPaths['VerifyLog']         = "/tmp/checksum/verifylog.txt";
 $checksumPaths['ChecksumLog']       = "/tmp/checksum/checksumLog.txt";
-
+$checksumPaths['BlakeCompatible']   = "/tmp/checksum/NotBlakeCompatible";
 
 
 $unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
@@ -37,6 +37,12 @@ $scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
 $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
 $scriptPaths['RemoveCron']          = "/usr/local/emhttp/plugins/$plugin/scripts/checksumRemoveCron.php";
 $scriptPaths['UpdateCron']          = "/usr/local/emhttp/plugins/$plugin/scripts/checksumUpdateCron.php";
+$scriptPaths['CheckBlake']          = "/usr/local/emhttp/plugins/$plugin/scripts/b2check.sh";
+
+if ( ! file_exists($checksumPaths['BlakeCompatible']) )
+{
+  exec($scriptPaths['CheckBlake']." >/dev/null 2>&1");
+}
 
 if ( ! is_dir(pathinfo($checksumPaths['tmpSettings'],PATHINFO_DIRNAME)) )
 {
@@ -101,6 +107,14 @@ function logger($string, $newLine = true)
 
 function createShare($i,$settings = false)
 {
+  global $checksumPaths;
+
+  $blakeCompatible = true;
+  if ( file_exists($checksumPaths['BlakeCompatible']) )
+  {
+    $blakeCompatible = false;
+  }
+
   $runSetting = "";
   if ( ! $settings )
   {
@@ -193,11 +207,26 @@ function createShare($i,$settings = false)
       $algorithmComment = "  (* see help)";
     }
 
-    if ( $settings['Algorithm'] == $algorithm )
+    if ( $algorithm == "blake2" )
     {
-      $t .= "<option value='$algorithm' selected>$algorithm$algorithmComment</option>";
+      if ( $blakeCompatible )
+      {
+        $blakeFlag = false;
+      } else {
+        $blakeFlag = true;
+      }
     } else {
-      $t .= "<option value='$algorithm'>$algorithm$algorithmComment</option>";
+      $blakeFlag = false;
+    }
+
+    if ( ! $blakeFlag )
+    {
+      if ( $settings['Algorithm'] == $algorithm )
+      {
+        $t .= "<option value='$algorithm' selected>$algorithm$algorithmComment</option>";
+      } else {
+        $t .= "<option value='$algorithm'>$algorithm$algorithmComment</option>";
+      }
     }
   }
   $t .= "</select></td>";
