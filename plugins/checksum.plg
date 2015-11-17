@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.11.10">
-<!ENTITY md5       "566d622eb102ed7f7312d424b8203de9">
+<!ENTITY version   "2015.11.16">
+<!ENTITY md5       "417993905184dae85a8485b0e64ed3e4">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,11 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.11.16###
+- Improvements to PAR2 sections
+- Reorganization to support further integration of PAR2
+- Disallow Blake2 checksum creation on systems not supporting SSE4.1
+
 ###2015.11.10###
 - Add pre-release (beta) par2 support
 
