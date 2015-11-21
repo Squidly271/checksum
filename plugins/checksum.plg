@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.11.16">
-<!ENTITY md5       "417993905184dae85a8485b0e64ed3e4">
+<!ENTITY version   "2015.11.21">
+<!ENTITY md5       "af6f2fa1e8ab6dcd449e3f7c2974be44">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2015.11.21###
+- Bug fixes on global settings
+
 ###2015.11.16###
 - Improvements to PAR2 sections
 - Reorganization to support further integration of PAR2

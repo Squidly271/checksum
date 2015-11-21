@@ -1021,7 +1021,7 @@ case 'show_global':
               <b>Maximum Number Of Queued Events:</b>
             </td>
             <td>
-              <input type='number' id='numqueue' class='narrow' onput='validateWatches();'></input>
+              <input type='number' id='numqueue' class='narrow' oninput='validateWatches();'></input>
             </td>
           </tr>
           <tr>
@@ -1105,7 +1105,7 @@ case 'show_global':
   $t .= ($globalSettings['IgnoreHour']) ? "$('#ignoreHour').val('yes');" : "$('#ignoreHour').val('no');";
   $t .= ($globalSettings['Parity']) ? "$('#parity').val('yes');" : "$('#parity').val('no');";
   $t .= ($globalSettings['Notify']) ? "$('#notify').val('yes');" : "$('#notify').val('no');";
-  $t .= ($globalSettings['Success']) ? "($'#success').val('yes');" : "$('#success').val('no');";
+  $t .= ($globalSettings['Success']) ? "$('#success').val('yes');" : "$('#success').val('no');";
 
   $t .= "$('#numqueue').val('$numQueue');";
   $t .= "$('#numwatches').val('$numWatches');";
