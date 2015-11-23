@@ -24,8 +24,9 @@ $checksumPaths['usbGlobal']         = "/boot/config/plugins/$plugin/settings/glo
 $checksumPaths['Schedule']          = "/boot/config/plugins/$plugin/settings/schedule.json";
 $checksumPaths['VerifyLog']         = "/tmp/checksum/verifylog.txt";
 $checksumPaths['ChecksumLog']       = "/tmp/checksum/checksumLog.txt";
+$checksumPaths['Par2Log']           = "/tmp/checksum/par2log.txt";
 $checksumPaths['BlakeCompatible']   = "/tmp/checksum/NotBlakeCompatible";
-
+$checksumPaths['Par2Job']           = "/tmp/checksum/par2job";
 
 $unRaidPaths['Variables']           = "/var/local/emhttp/var.ini";
 
@@ -79,6 +80,13 @@ if ( is_file("/boot/config/plugins/checksum/global.json") )
   rename("/boot/config/plugins/checksum/global.json",$checksumPaths['usbGlobal']);
 }
 
+
+function par2status()
+{
+  $status = exec('ps -A -f | grep -v grep | grep checksumPar2');
+
+  return $status;
+}
 
 function logger($string, $newLine = true)
 {
@@ -175,6 +183,7 @@ function createShare($i,$settings = false)
       $t .= "<option value='$share'>$share</option>";
     }
   }
+
   if ( $flag )
   {
     $t .= "<option value='***'>Custom</option>";
@@ -597,14 +606,14 @@ case 'show_create':
   break;
 
 case 'stop_monitor':
-  logger("Background Monitor Stopping\n");
+  logger("Background Service Stopping\n");
   system("/usr/local/emhttp/plugins/checksum/event/stopping_svcs");
   sleep(10);
   echo "hopefully stopped";
   break;
 
 case 'start_monitor':
-  logger("Background Monitor Starting\n");
+  logger("Background Service Starting\n");
   system("/usr/local/emhttp/plugins/checksum/event/disks_mounted > /dev/null 2>&1");
   sleep(10);
   echo "done";
@@ -743,28 +752,24 @@ case 'add':
 case 'status':
   $status = exec('ps -A -f | grep -v grep | grep "checksum_inotifywait"');
   $verifyStatus = exec('ps -A -f | grep -v grep | grep "checksum/scripts/verify.php"');
+  $parStatus = exec('ps -A -f | grep -v grep | grep checksumPar2');
 
   $inotifyInstalled = is_file("/usr/bin/inotifywait");
 
   $t = "";
   if ( $inotifyInstalled)
   {
-    if ( $status )
-    {
-      $t .= "<font color='green'>Running</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',false);</script>";
-    } else {
-      $t .= "<font color='red'>Not Running</font><script>$('#restart').prop('disabled',false);$('#stop').prop('disabled',true);</script>";
-    }
+    $t .= $status ? "<font color='green'>Running</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',false);</script>" : "<font color='red'>Not Running</font><script>$('#restart').prop('disabled',false);$('#stop').prop('disabled',true);</script>";
   } else {
     $t .= "<font color='red'>inotifywait NOT installed</font><script>$('#restart').prop('disabled',true);$('#stop').prop('disabled',true);</script>";
   }
 
   $md5Status = "Idle";
 
-  if ( file_exists("/tmp/checksum/waiting") )  { $md5Status = "Waiting For Timeout"; }
+  if ( file_exists("/tmp/checksum/waiting") )  { $md5Status = "Waiting"; }
   if ( file_exists("/tmp/checksum/running") )  { $md5Status = "Running"; }
-  if ( file_exists("/tmp/checksum/mover") )    { $md5Status = "<font color='red'>Paused during mover operation</font>"; }
-  if ( file_exists("/tmp/checksum/parity") )   { $md5Status = "<font color='red'>Paused for parity check / rebuild</font>"; }
+  if ( file_exists("/tmp/checksum/mover") )    { $md5Status = "<font color='red'>Paused</font>"; }
+  if ( file_exists("/tmp/checksum/parity") )   { $md5Status = "<font color='red'>Paused</font>"; }
   if ( file_exists("/tmp/checksum/paranoia") ) { $md5Status = "<font color='red'><strong>Paranoia Checks Failed.  Review Logs</strong></font>"; }
 
   $t .= "  Checksum Calculations <font color='green'>$md5Status</font>";
@@ -775,42 +780,28 @@ case 'status':
   {
     $t .= "<font color='red'><strong>Paused for Parity Check / Rebuild</strong></font>";
   } else {
-    if ( $verifyStatus )
-    {
-      $t .= "<font color='green'><strong>Running</strong></font>";
-    } else {
-      $t .= "<font color='green'><strong>Idle</strong></font>";
-    }
+    $t .= $verifystatus ? "<font color='green'><strong>Running</strong></font>" : "<font color='green'><strong>Idle</strong></font>";
   }
 
-  if ( is_file($checksumPaths['FailureLog']) )
+  $t .= " Par2 Status: ";
+  $t .= $parstatus ?  "<font color='red'>Running</font>" : "<font color='green'>Idle</font>";
+
+  $t .= is_file($checksumPaths['ChecksumLog']) ? "<script>$('#checksumLog').prop('disabled',false);</script>" : "<script>$('#checksumLog').prop('disabled',true);</script>";
+  $t .= is_file($checksumPaths['VerifyLog'])   ? "<script>$('#verifyLog').prop('disabled',false);</script>"   : "<script>$('#verifyLog').prop('disabled',true);</script>";
+  $t .= is_file($checksumPaths['Log'])         ? "<script>$('#commandLog').prop('disabled',false);</script>"  : "<script>$('#commandLog').prop('disabled',true);</script>";
+  $t .= is_file($checksumPaths['FailureLog'])  ? "<script>$('#failureLog').prop('disabled',false);</script>"  : "<script>$('#failureLog').prop('disabled',true);</script>";
+  $t .= is_file($checksumPaths['Par2Log'])     ? "<script>$('#par2log').prop('disabled',false);</script>"     : "<script>$('#par2log').prop('disabled',true);</script>";
+
+  if ( is_file($checksumPaths['Par2Job']) )
   {
-    $t .= "<script>$('#failureLog').prop('disabled',false);</script>";
+    $currentJob = '<font color="red">';
+    $currentJob .= file_get_contents($checksumPaths['Par2Job']);
+    $currentJob .= "</font>";
   } else {
-    $t .= "<script>$('#failureLog').prop('disabled',true);</script>";
+    $currentJob = '<font color="green">Idle</font>';
   }
 
-
-  if ( is_file($checksumPaths['ChecksumLog']) )
-  {
-    $t .= "<script>$('#checksumLog').prop('disabled',false);</script>";
-  } else {
-    $t .= "<script>$('#checksumLog').prop('disabled',true);</script>";
-  }
-
-  if ( is_file($checksumPaths['VerifyLog']) )
-  {
-    $t .= "<script>$('#verifyLog').prop('disabled',false);</script>";
-  } else {
-    $t .= "<script>$('#verifyLog').prop('disabled',true);</script>";
-  }
-
-  if ( is_file($checksumPaths['Log']) )
-  {
-    $t .= "<script>$('#commandLog').prop('disabled',false);</script>";
-  } else {
-    $t .= "<script>$('#commandLog').prop('disabled',true);</script>";
-  }
+  $t .= "<script>$('#currentJob').html('$currentJob');</script>";
 
   echo $t;
   break;
@@ -1291,6 +1282,198 @@ case "show_verify_schedule":
   $t .= "</table></center>";
 
   echo $t;
+  break;
+
+
+case 'par_display_path':
+  $path = urldecode(($_POST['path']));
+  $path = str_replace("***",'"',$path);
+  $path = str_replace("**","'",$path);
+
+
+  if ( !  is_dir($path) )
+  {
+    $path = "/mnt";
+  }
+
+  $pathContents = array_diff(scandir($path),array(".",".."));
+
+  foreach ($pathContents as $contents)
+  {
+    if ( is_dir($path."/".$contents) )
+    {
+      $dirContents[] = $contents;
+    } else {
+      $fileContents[] = $contents;
+    }
+  }
+  if ( is_array($dirContents) )
+  {
+    natcasesort($dirContents);
+  } else {
+    $dirContents = array();
+  }
+
+  if ( is_array($fileContents) )
+  {
+    natcasesort($fileContents);
+  } else {
+    $fileContents = array();
+  }
+
+
+  array_unshift($dirContents,"..");
+
+  $elementCount = count($dirContents);
+
+  $t = "<br><br>";
+  $t .= "<b>Current Job: </b><span id='currentJob'></span><br><br>";
+  $t .= "<center>";
+  $t .= "<table>";
+  $t .= "<tr>";
+
+  $t .= "<td width='20%'><center><b>Folder List</b><br>$path</center>";
+  $t .= "</td><td width='20%'><center><b>File List</b></center></td>";
+  $t .= "<td></td>";
+  $t .= "</tr><tr>";
+
+
+  $t .= "<td>";
+
+  $t .= "<b><select id='directory' size='20' style='width:500px' onchange='changePath();'>";
+
+  foreach ($dirContents as $dir)
+  {
+    $fixedPath = $path."/".$dir;
+    $fixedPath = str_replace("'","**",$fixedPath);
+    $fixedPath = str_replace('"',"***",$fixedPath);
+    $fixedPath = str_replace("//","/",$fixedPath);
+
+
+    if ( $dir == ".." )
+    {
+      if ( $path != "/" )
+      {
+        $t .= "<option value='".dirname($path)."'>$dir (Parent Directory)</option>";
+      }
+    } else {
+      $t .= "<option value='$fixedPath'>$dir</option>";
+    }
+  }
+
+  for ( $i = count($dirContents); $i < 20; $i++ )
+  {
+    $t .= "<option disabled> </option>";
+  }
+  $t .= "</select>";
+
+  $t .= "</td><td>";
+
+
+  $t .= "<select size='20' style='width:500px' onchange='enableVerify();' id='par2select'>";
+
+  foreach ($fileContents as $file)
+  {
+    if ( fnmatch("*.par2",$file,FNM_CASEFOLD) )
+    {
+      $fixedPath = $path."/".$file;
+      $fixedPath = str_replace("'","**",$fixedPath);
+      $fixedPath = str_replace('"',"***",$fixedPath);
+      $fixedPath = str_replace("//","/",$fixedPath);
+
+      $t .= "<option value='$fixedPath'>$file</option>";
+    } else {
+      $t .= "<option disabled>$file</font></option>";
+    }
+  }
+  for ( $i = count($fileContents); $i <= 20; $i++ )
+  {
+    $t .= "<option disabled> </option>";
+  }
+  $t .= "</select>";
+
+
+  $t .= "</td>";
+  $t .= "<td>";
+  $t .= "<table>
+           <tr>
+             <td>
+               <b>Overwrite existing par2 files?</b>  <input type='checkbox' id='overwrite'></input>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <b>Recursive (follow subdirectories)?</b>  <input type='checkbox' id='recursive'></input>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <b>Redundancy % </b> <input type='number' class='narrow' value='10' id='redundancy'></input>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <input type='button' id='createButton' value='Create Par2' onclick='createPar();'></input>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <input type='button' id='verifyButton' value='Verify Files' onclick='verifyPar(&quot;verify&quot;);' disabled></input>
+             </td>
+           </tr>
+           <tr>
+             <td>
+               <input type='button' id='repairButton' value='Repair Files' onclick='verifyPar(&quot;repair&quot;);' disabled></input>
+         </table>";
+  $t .= "</td></tr></table>";
+
+  $t .= "<script>$('#folder').html('$path');</script>";
+
+  if ( par2status() )
+  {
+    $t .= "<script>$('#createButton').prop('disabled',true);</script>";
+    $t .= "<script>$('#verifyButton').prop('disabled',true);</script>";
+  } else {
+    $t .= "<script>$('#createButton').prop('disabled',false);</script>";
+    $t .= "<script>$('#verifyButton').prop('disabled',false);</script>";
+  }
+
+  echo $t;
+  break;
+
+case 'par_create_par':
+  $path = urldecode(($_POST['path']));
+  $percent = urldecode(($_POST['percent']));
+  $overwrite = urldecode(($_POST['overwrite']));
+  $recursive = urldecode(($_POST['recursive']));
+
+  $options = "blank$overwrite$recursive";
+
+  $job = "Current Job: Create $path, $overwrite";
+  file_put_contents("/tmp/checksum/par2job",$job);
+
+  $commandLine = 'echo "'.$percent.'***'.$path.'***'.$options.'" >> /tmp/checksum/par2pipe';
+  exec($commandLine.' | AT NOW -M > /dev/null 2>&1');
+
+  echo "done";
+  break;
+
+case 'par_verify_par':
+  $path = urldecode(($_POST['path']));
+  $par = urldecode(($_POST['par']));
+  $verify = urldecode(($_POST['verify']));
+
+  $options = "blank$verify";
+  $job = "Current Job: Verify $path";
+  file_put_contents("/tmp/checksum/par2job",$job);
+
+  $commandLine = 'echo "'.$percent.'***'.$path.'***'.$options.'***'.$par.'" >> /tmp/checksum/par2pipe';
+  file_put_contents("/tmp/command",$commandLine);
+  exec($commandLine.' | AT NOW -M > /dev/null 2>&1');
+
+  echo "done";
+  break;
+
 
 }
 ?>
