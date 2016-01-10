@@ -13,6 +13,8 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+Note that development has ceased on this plugin.
+
 ###2015.11.21###
 - Bug fixes on global settings
 
