@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2015.11.21">
-<!ENTITY md5       "af6f2fa1e8ab6dcd449e3f7c2974be44">
+<!ENTITY version   "2016.08.26">
+<!ENTITY md5       "cb49783140b71fd7100378bec5bd6914">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -14,6 +14,9 @@
 
 <CHANGES>
 Note that development has ceased on this plugin.
+
+###2016.08.26###
+- Fix background monitor to pick up renames
 
 ###2015.11.21###
 - Bug fixes on global settings

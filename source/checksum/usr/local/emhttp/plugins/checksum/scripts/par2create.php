@@ -105,6 +105,5 @@ foreach ($directories as $path)
   $commandLine = '/usr/local/emhttp/plugins/checksum/scripts/createPar2.sh '.$percent.' "'.$path.'" '.$files;
   echo $commandLine."\n";
   exec($commandLine);
-  unlink("/tmp/checksum/par2job");
 }
 ?>

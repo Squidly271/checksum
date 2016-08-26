@@ -1,4 +1,4 @@
-Menu="Utilities"
+Menu="ChecksumSuite"
 Title="Checksum Tools"
 Icon="checksum.png"
 ---
@@ -444,9 +444,8 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",false);
       $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",false);
 
-      $.post(URL,{action:'show_global'},function(data)
+      $.post(URL,{action:'show_global'}, function(data)
       {
         if (data)
         {
@@ -455,7 +454,6 @@ function changeView(button)
       });
 
       break;
-
     case "CreateButton":
       $("#GlobalButton").prop("disabled",false);
       $("#CreateButton").prop("disabled",true);
@@ -463,7 +461,6 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",false);
       $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",false);
 
       $.post(URL,{action:'show_create'},function(data)
       {
@@ -481,7 +478,6 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",false);
       $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",false);
 
       $.post(URL,{action:'show_manual'},function(data)
       {
@@ -500,7 +496,6 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",true);
       $("#VerifyButton").prop("disabled",false);
       $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",false);
 
       $.post(URL,{action:'show_schedule'}, function(data)
       {
@@ -518,7 +513,6 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",true);
       $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",false);
 
       $.post(URL,{action:'show_verify_schedule',tag:'Verify'},function(data)
       {
@@ -535,7 +529,6 @@ function changeView(button)
       $("#ScheduleButton").prop("disabled",false);
       $("#VerifyButton").prop("disabled",false);
       $("#DiskButton").prop("disabled",true);
-      $("#ParButton").prop("disabled",false);
 
       $.post(URL,{action:'show_verify_schedule',tag:'Disk'},function(data)
       {
@@ -545,26 +538,6 @@ function changeView(button)
         }
       });
       break;
-
-    case "ParButton":
-      $("#GlobalButton").prop("disabled",false);
-      $("#CreateButton").prop("disabled",false);
-      $("#ManualButton").prop("disabled",false);
-      $("#ScheduleButton").prop("disabled",false);
-      $("#VerifyButton").prop("disabled",false);
-      $("#DiskButton").prop("disabled",false);
-      $("#ParButton").prop("disabled",true);
-
-      $.post(URL,{action:'par_display_path',path:'/mnt/user'},function(data)
-      {
-        if (data)
-        {
-          $("#settings").html(data);
-        }
-      });
-      break;
-
-
 
   }
 }
@@ -701,95 +674,22 @@ function generateCron(share,index)
 }
 
 
-function changePath()
-{
-  var path = $("#directory").val();
-
-  $.post(URL,{action:'par_display_path',path:path},function(data)
-  {
-    if (data)
-    {
-      $("#settings").html(data);
-    }
-  });
-}
-
-function createPar()
-{
-  var path = $("#folder").html();
-
-  if ( $("#recursive").is(':checked') )
-  {
-    var recursive = "recursive";
-  } else {
-    var recursive = "";
-  }
-  $("#debug1").html(recursive);
-  if ( $("#overwrite").is(':checked') )
-  {
-    var overwrite = "overwrite";
-  } else {
-    var overwrite = "";
-  }
-
-  var percent = $("#redundancy").val();
-
-  $("#createButton").prop("disabled",true);
-
-  $.post(URL,{action:'par_create_par',path:path,percent:percent,overwrite:overwrite,recursive:recursive}, function(data)
-  {
-    if (data)
-    {
-      $("#createButton").prop("disabled",false);
-    }
-  });
-}
-
-function enableVerify()
-{
-  if ( ! $("#createButton").prop("disabled") )
-  {
-    $("#verifyButton").prop("disabled",false);
-    $("#repairButton").prop("disabled",false);
-  }
-}
-
-
-function verifyPar(verify)
-{
-  var path = $("#folder").html();
-  var par = $("#par2select").val();
-
-  $("#verifyButton").prop("disabled",true);
-
-  $.post(URL,{action:'par_verify_par',path:path,par:par,verify:verify}, function(data)
-  {
-    $("#verifyButton").prop("disabled",false);
-  });
-}
-
-
-
 
 </script>
-<input type='button' value='Stop Service' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Service' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='0'><b>Monitor Status: <span id='status'></span></b></font>
+<input type='button' value='Stop Monitor' id='stop' onclick='stopMonitor();'></input><input type='button' id='restart' value='Start Monitor' onclick='restartMonitor();'></input><span id='restartNeeded'></span><font size='2'><b>Monitor Status: <span id='status'></span></b></font>
 <span style='float:right'><input type='button' id='failureLog' value='Failure Log' onclick='logButton("failurelog.txt");' disabled)</input>
-<input id='par2log' type='button' value='Par2 Log' onclick='logButton("par2log.txt");'></input>
 <input id='checksumLog' type='button' value='Creator Log' onclick='logButton("checksumLog.txt");'></input>
 <input id='verifyLog' type='button' value='Verify Log' onclick='logButton("verifylog.txt");'></input>
 <input id='commandLog' type='button' value='CommandLog' onclick='logButton("log.txt");'></input></span><br>
 <font size='0' face='Courier New'><span id='logged'></span></font><br>
-<center>
-<input type='button' id='GlobalButton' value='Global Settings' onclick='changeView(this.id);' disabled></input>
+<center><input type='button' id='GlobalButton' value='Global Settings' onclick='changeView(this.id);' disabled></input>
 <input type='button' id='CreateButton' value='Creation / Monitor Settings' onclick='changeView(this.id);'></input>
 <input type='button' id='ManualButton' value='Add Manual Job' onclick='changeView(this.id);'></input>
 <input type='button' id='ScheduleButton' value='Share Creation Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='VerifyButton' value='Share Verification Schedule' onclick='changeView(this.id);'></input>
 <input type='button' id='DiskButton' value='Disk Verification Schedule' onclick='changeView(this.id);'></input>
-<input type='button' id='ParButton' value='Par2 Settings' onclick='changeView(this.id);'></input>
-</center>
+
 <span id="settings"></span>
 
 <span id="FuckUps"></span>
 <span id="debug"></span>
-<span id="folder"></span>
