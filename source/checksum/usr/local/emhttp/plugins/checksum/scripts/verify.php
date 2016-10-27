@@ -86,7 +86,7 @@ function is_parity_running()
 
   $vars = array();
 
-  $vars = parse_ini_file($unRaidPaths['Variables']);
+  $vars = my_parse_ini_file($unRaidPaths['Variables']);
 
   return ( $vars['mdResync'] != "0" );
 }
@@ -387,6 +387,19 @@ function parseHash($filename)
   }
 
   return $md5Array;
+}
+####################################################################################################
+#                                                                                                  #
+# 2 Functions because unRaid includes comments in .cfg files starting with # in violation of PHP 7 #
+#                                                                                                  #
+####################################################################################################
+
+function my_parse_ini_file($file,$mode=false,$scanner_mode=INI_SCANNER_NORMAL) {
+  return parse_ini_string(preg_replace('/^#.*\\n/m', "", @file_get_contents($file)),$mode,$scanner_mode);
+}
+
+function my_parse_ini_string($string, $mode=false,$scanner_mode=INI_SCANNER_NORMAL) {
+  return parse_ini_string(preg_replace('/^#.*\\n/m', "", $string),$mode,$scanner_mode);
 }
 
 
