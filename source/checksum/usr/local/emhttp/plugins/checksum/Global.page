@@ -9,20 +9,6 @@ Icon="checksum.png"
 ##  Checksum.  Copyright 2015, Andrew Zawadzki ##
 ##                                             ##
 #################################################
-####################################################################################################
-#                                                                                                  #
-# 2 Functions because unRaid includes comments in .cfg files starting with # in violation of PHP 7 #
-#                                                                                                  #
-####################################################################################################
-
-function my_parse_ini_file($file,$mode=false,$scanner_mode=INI_SCANNER_NORMAL) {
-  return parse_ini_string(preg_replace('/^#.*\\n/m', "", @file_get_contents($file)),$mode,$scanner_mode);
-}
-
-function my_parse_ini_string($string, $mode=false,$scanner_mode=INI_SCANNER_NORMAL) {
-  return parse_ini_string(preg_replace('/^#.*\\n/m', "", $string),$mode,$scanner_mode);
-}
-
 
 $plugin = "checksum";
 $checksumPaths['usbSettings']       = "/boot/config/plugins/$plugin/settings.json";
@@ -41,7 +27,7 @@ $scriptPaths['MonitorWatch']        = "/usr/local/emhttp/plugins/$plugin/scripts
 $scriptPaths['inotifywait']         = "/usr/bin/inotifywait";
 $scriptPaths['checksuminotifywait'] = "/tmp/checksum/checksum_inotifywait";
 
-$unRaidVariables = my_parse_ini_file("/var/local/emhttp/var.ini");
+$unRaidVariables = parse_ini_file("/var/local/emhttp/var.ini");
 $unRaidStarted = $unRaidVariables['mdState'] == "STARTED" ? "true" : "false";
 
 

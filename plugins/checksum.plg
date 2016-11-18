@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2016.10.27">
-<!ENTITY md5       "727ed0cb874600a2208f9b30ca7280f6">
+<!ENTITY version   "2016.11.18">
+<!ENTITY md5       "11671437a06b8060ce832de0f8b0e583">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -14,6 +14,9 @@
 
 <CHANGES>
 Note that development has ceased on this plugin.
+
+###2016.11.18###
+- 6.3RC4 Compatibility
 
 ###2016.10.27###
 - Add in fix for possible future problems with unRaid 6.3+ and comments being present in .cfg files
