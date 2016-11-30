@@ -22,6 +22,9 @@
 
     foreach ($verifySchedule as $schedule)
     {
+      if ( $schedule['Frequency'] == "never" ) {
+        continue;
+      }
       if ( $schedule['Frequency'] == "custom" )
       {
         $cronTime = $schedule['Custom'];
@@ -40,6 +43,9 @@
 
     foreach ($diskSchedule as $schedule)
     {
+      if ( $schedule['Frequency'] == "never" ) {
+        continue;
+      }
       if ( $schedule['Frequency'] == "custom" )
       {
         $cronTime = $schedule['Custom'];
@@ -59,6 +65,9 @@
 
     foreach ($shareSchedule as $schedule)
     {
+      if ( $schedule['Frequency'] == "never" ) {
+        continue;
+      }
       if ( $schedule['Frequency'] == "custom" )
       {
         $cronTime = $schedule['Custom'];
