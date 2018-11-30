@@ -199,7 +199,7 @@ function createShare($i,$settings = false)
   $t .= "<td><b>Algorithm to use: </b></td>";
   $t .= "<td><select id='algorithm$i' onchange='enableApply($i);'>";
 
-  foreach ( array("md5","sha1","sha256","blake2") as $algorithm)
+  foreach ( array("md5","sha1","sha256") as $algorithm)
   {
     $algorithmComment = "";
     if ( $algorithm == "sha256" )
