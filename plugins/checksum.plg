@@ -2,8 +2,8 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2018.11.30a">
-<!ENTITY md5       "168566a439c0dc8719a1e04a2e8e352c">
+<!ENTITY version   "2018.12.31">
+<!ENTITY md5       "808281482bdea6721ee33af7234972a8">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
@@ -13,6 +13,9 @@
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
 
 <CHANGES>
+###2018.12.31###
+- Update icon for unRaid 6.7.0
+
 Note that development has ceased on this plugin, any bugs may or may not be addressed
 ###2018.11.30###
 - Reinstate plugin in Community Applications
