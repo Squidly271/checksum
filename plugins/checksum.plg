@@ -2,17 +2,20 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "checksum">
 <!ENTITY author    "Andrew Zawadzki">
-<!ENTITY version   "2018.12.31">
-<!ENTITY md5       "808281482bdea6721ee33af7234972a8">
+<!ENTITY version   "2019.01.13">
+<!ENTITY md5       "42684f87098f098104e7cfba525f3978">
 <!ENTITY launch    "Settings/Checksum">
 <!ENTITY plugdir   "/usr/local/emhttp/plugins/&name;">
 <!ENTITY github    "Squidly271/checksum">
 <!ENTITY pluginURL "https://raw.githubusercontent.com/&github;/master/plugins/&name;.plg">
 ]>
 
-<PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;">
+<PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" icon="check-square">
 
 <CHANGES>
+###2019.01.13###
+- Update icon
+
 ###2018.12.31###
 - Update icon for unRaid 6.7.0
 
