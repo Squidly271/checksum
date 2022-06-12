@@ -11,7 +11,13 @@
 ]>
 
 <PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" icon="check-square">
+<ALERT>
+###TESTING###
 
+this is a test
+
+#another test#
+</ALERT>
 <CHANGES>
 ###2019.01.13###
 - Update icon
